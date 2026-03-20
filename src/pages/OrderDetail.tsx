@@ -29,19 +29,26 @@ export default function OrderDetail() {
 
   const handleStatusChange = (newStatus: OrderStatus) => {
     const updates: Partial<typeof order> = { status: newStatus };
-    if (newStatus === 'Preuzeto') updates.pickedUpAt = new Date().toISOString();
+    if (newStatus === 'Preuzeto') {
+      updates.pickedUpAt = new Date().toISOString();
+      addAuditEntry(order.id, `Porudžbina preuzeta`);
+    }
     if (newStatus === 'Spremno' && customer?.email) {
-      // Simulate sending email
       updates.readyNotificationSentAt = new Date().toISOString();
       setNotification(`Email obaveštenje poslato na ${customer.email}`);
+      addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
     } else if (newStatus === 'Spremno' && !customer?.email) {
       setNotification('Kupac nema email adresu. Obavestite ga telefonom.');
     }
+    addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
     updateOrder(order.id, updates);
     forceRender(n => n + 1);
   };
 
   const handleFieldUpdate = (field: string, value: any) => {
+    if (field === 'paymentStatus') {
+      addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
+    }
     updateOrder(order.id, { [field]: value });
     forceRender(n => n + 1);
   };
