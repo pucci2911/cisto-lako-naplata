@@ -147,7 +147,7 @@ export default function NewOrder() {
     return (
       <div>
         <div className="mb-4 no-print">
-          <Button variant="outline" onClick={() => navigate('/')}>← Nazad na kontrolnu tablu</Button>
+          <Button variant="outline" onClick={() => navigate('/kontrolna-tabla')}>← Nazad na kontrolnu tablu</Button>
         </div>
         <ClaimTicket orderId={savedOrderId} />
       </div>
