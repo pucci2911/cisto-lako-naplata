@@ -51,6 +51,8 @@ const App = () => (
             <Route path="/kupci/:id" element={<ProtectedRoute><CustomerDetail /></ProtectedRoute>} />
             <Route path="/cenovnik" element={<ProtectedRoute ownerOnly><PriceListPage /></ProtectedRoute>} />
             <Route path="/podesavanja" element={<ProtectedRoute ownerOnly><SettingsPage /></ProtectedRoute>} />
+            <Route path="/izvestaji" element={<ProtectedRoute ownerOnly><ReportsPage /></ProtectedRoute>} />
+            <Route path="/zaposleni" element={<ProtectedRoute ownerOnly><StaffPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
