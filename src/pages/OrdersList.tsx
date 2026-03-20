@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getOrders, getCustomer } from '@/store/data';
 import { formatDate, formatPrice, statusColor, paymentStatusColor } from '@/lib/format';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { OrderStatus } from '@/types';
 
 const statuses: Array<OrderStatus | 'Sve'> = ['Sve', 'Primljeno', 'U obradi', 'Spremno', 'Preuzeto', 'Otkazano'];
@@ -11,6 +12,8 @@ export default function OrdersList() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<OrderStatus | 'Sve'>('Sve');
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const orders = getOrders()
     .filter(o => filter === 'Sve' || o.status === filter)
@@ -21,6 +24,18 @@ export default function OrdersList() {
       return o.orderNumber.toLowerCase().includes(q) ||
         c?.fullName.toLowerCase().includes(q) ||
         c?.phone.includes(q);
+    })
+    .filter(o => {
+      if (!dateFrom && !dateTo) return true;
+      const received = new Date(o.receivedAt);
+      received.setHours(0, 0, 0, 0);
+      if (dateFrom && dateTo) {
+        const from = new Date(dateFrom);
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        return received >= from && received <= to;
+      }
+      return true;
     })
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
 
@@ -37,8 +52,24 @@ export default function OrdersList() {
         ))}
       </div>
 
-      <Input placeholder="Pretražite po broju, imenu ili telefonu..." value={search} onChange={e => setSearch(e.target.value)}
-        className="mb-4 h-12 text-base max-w-md" />
+      <div className="flex flex-wrap gap-4 mb-4 items-end">
+        <Input placeholder="Pretražite po broju, imenu ili telefonu..." value={search} onChange={e => setSearch(e.target.value)}
+          className="h-12 text-base max-w-md" />
+        <div className="flex gap-2 items-end">
+          <div>
+            <Label className="text-sm text-muted-foreground">Od datuma</Label>
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-12" />
+          </div>
+          <div>
+            <Label className="text-sm text-muted-foreground">Do datuma</Label>
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-12" />
+          </div>
+          {(dateFrom || dateTo) && (
+            <button onClick={() => { setDateFrom(''); setDateTo(''); }}
+              className="text-sm text-muted-foreground hover:text-foreground underline pb-3">Poništi</button>
+          )}
+        </div>
+      </div>
 
       <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
         <div className="overflow-x-auto">

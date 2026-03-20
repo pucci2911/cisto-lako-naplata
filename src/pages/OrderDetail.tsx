@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getOrder, getCustomer, getOrderItems, updateOrder, updateOrderItem, getSettings } from '@/store/data';
 import { formatDate, formatDateTime, formatPrice, statusColor, paymentStatusColor } from '@/lib/format';
+import { addAuditEntry, getAuditEntries } from '@/store/audit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,19 +29,26 @@ export default function OrderDetail() {
 
   const handleStatusChange = (newStatus: OrderStatus) => {
     const updates: Partial<typeof order> = { status: newStatus };
-    if (newStatus === 'Preuzeto') updates.pickedUpAt = new Date().toISOString();
+    if (newStatus === 'Preuzeto') {
+      updates.pickedUpAt = new Date().toISOString();
+      addAuditEntry(order.id, `Porudžbina preuzeta`);
+    }
     if (newStatus === 'Spremno' && customer?.email) {
-      // Simulate sending email
       updates.readyNotificationSentAt = new Date().toISOString();
       setNotification(`Email obaveštenje poslato na ${customer.email}`);
+      addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
     } else if (newStatus === 'Spremno' && !customer?.email) {
       setNotification('Kupac nema email adresu. Obavestite ga telefonom.');
     }
+    addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
     updateOrder(order.id, updates);
     forceRender(n => n + 1);
   };
 
   const handleFieldUpdate = (field: string, value: any) => {
+    if (field === 'paymentStatus') {
+      addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
+    }
     updateOrder(order.id, { [field]: value });
     forceRender(n => n + 1);
   };
@@ -201,6 +209,25 @@ export default function OrderDetail() {
             <Textarea value={order.internalNotes || ''} onChange={e => handleFieldUpdate('internalNotes', e.target.value)} rows={2} />
           </div>
         </div>
+      </div>
+
+      {/* Audit Trail */}
+      <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
+        <h2 className="text-lg font-semibold mb-3">Istorija promena</h2>
+        {(() => {
+          const entries = getAuditEntries(order.id);
+          if (entries.length === 0) return <p className="text-sm text-muted-foreground">Nema zabeleženih promena.</p>;
+          return (
+            <div className="space-y-2">
+              {entries.map(entry => (
+                <div key={entry.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-2 last:pb-0">
+                  <span className="text-muted-foreground whitespace-nowrap">{formatDateTime(entry.timestamp)}</span>
+                  <span>{entry.description}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
-import { LayoutDashboard, ClipboardList, Users, Tag, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, Tag, Settings, LogOut, BarChart3 } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,7 +11,8 @@ const navItems = [
   { to: '/', label: 'Kontrolna tabla', icon: LayoutDashboard },
   { to: '/porudzbine', label: 'Porudžbine', icon: ClipboardList },
   { to: '/kupci', label: 'Kupci', icon: Users },
-  { to: '/cenovnik', label: 'Cenovnik', icon: Tag },
+  { to: '/cenovnik', label: 'Cenovnik', icon: Tag, ownerOnly: true },
+  { to: '/izvestaji', label: 'Izveštaji', icon: BarChart3, ownerOnly: true },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -39,7 +40,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="w-56 bg-card border-r hidden md:block no-print shrink-0">
           <div className="p-4 space-y-1">
             {navItems.map(item => {
-              if (item.to === '/cenovnik' && user?.role === 'employee') return null;
+              if ((item as any).ownerOnly && user?.role === 'employee') return null;
               const active = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
               return (
                 <Link key={item.to} to={item.to}
@@ -63,7 +64,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="fixed bottom-0 left-0 right-0 bg-card border-t md:hidden z-30 no-print">
           <div className="flex justify-around py-2">
             {navItems.slice(0, 4).map(item => {
-              if (item.to === '/cenovnik' && user?.role === 'employee') return null;
+              if ((item as any).ownerOnly && user?.role === 'employee') return null;
               const active = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
               return (
                 <Link key={item.to} to={item.to} className={`flex flex-col items-center gap-0.5 px-2 py-1 text-xs ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>

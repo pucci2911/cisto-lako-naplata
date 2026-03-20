@@ -103,6 +103,20 @@ export function getUsers(): AppUser[] { return get<AppUser>(KEYS.users); }
 export function getUserByEmail(email: string): AppUser | undefined {
   return getUsers().find(u => u.email === email);
 }
+export function saveUser(u: Omit<AppUser, 'id'> & { password: string }): AppUser {
+  const all = getUsers();
+  const user: AppUser = { id: uid(), name: u.name, email: u.email, role: u.role, active: u.active };
+  all.push(user);
+  set(KEYS.users, all);
+  // Store password
+  const passwords: Record<string, string> = JSON.parse(localStorage.getItem('cisto_passwords') || '{}');
+  passwords[u.email] = u.password;
+  localStorage.setItem('cisto_passwords', JSON.stringify(passwords));
+  return user;
+}
+export function updateUser(id: string, updates: Partial<AppUser>) {
+  set(KEYS.users, getUsers().map(u => u.id === id ? { ...u, ...updates } : u));
+}
 
 // Settings
 export function getSettings(): ShopSettings {

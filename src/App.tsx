@@ -15,6 +15,8 @@ import CustomersList from "@/pages/CustomersList";
 import CustomerDetail from "@/pages/CustomerDetail";
 import PriceListPage from "@/pages/PriceListPage";
 import SettingsPage from "@/pages/SettingsPage";
+import ReportsPage from "@/pages/ReportsPage";
+import StaffPage from "@/pages/StaffPage";
 import StatusCheck from "@/pages/StatusCheck";
 import NotFound from "@/pages/NotFound";
 import React from "react";
@@ -49,6 +51,8 @@ const App = () => (
             <Route path="/kupci/:id" element={<ProtectedRoute><CustomerDetail /></ProtectedRoute>} />
             <Route path="/cenovnik" element={<ProtectedRoute ownerOnly><PriceListPage /></ProtectedRoute>} />
             <Route path="/podesavanja" element={<ProtectedRoute ownerOnly><SettingsPage /></ProtectedRoute>} />
+            <Route path="/izvestaji" element={<ProtectedRoute ownerOnly><ReportsPage /></ProtectedRoute>} />
+            <Route path="/zaposleni" element={<ProtectedRoute ownerOnly><StaffPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

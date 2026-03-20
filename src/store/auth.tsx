@@ -22,7 +22,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const login = (email: string, password: string): boolean => {
+    // Demo account
     if (email === 'demo@cisto.rs' && password === 'demo1234') {
+      const u = getUserByEmail(email);
+      if (u && u.active) { setUser(u); return true; }
+    }
+    // Other accounts
+    const passwords: Record<string, string> = JSON.parse(localStorage.getItem('cisto_passwords') || '{}');
+    if (passwords[email] === password) {
       const u = getUserByEmail(email);
       if (u && u.active) { setUser(u); return true; }
     }
