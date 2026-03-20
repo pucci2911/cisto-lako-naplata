@@ -36,6 +36,14 @@ export default function SettingsPage() {
           {saved && <span className="text-sm text-success">Sačuvano!</span>}
         </div>
       </div>
+
+      <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mt-6">
+        <h2 className="text-lg font-semibold mb-3">Upravljanje zaposlenima</h2>
+        <p className="text-sm text-muted-foreground mb-3">Dodajte ili upravljajte nalozima zaposlenih.</p>
+        <Link to="/zaposleni" className="inline-flex items-center justify-center h-11 px-6 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+          Upravljaj zaposlenima
+        </Link>
+      </div>
     </div>
   );
 }
