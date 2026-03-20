@@ -11,7 +11,8 @@ const navItems = [
   { to: '/', label: 'Kontrolna tabla', icon: LayoutDashboard },
   { to: '/porudzbine', label: 'Porudžbine', icon: ClipboardList },
   { to: '/kupci', label: 'Kupci', icon: Users },
-  { to: '/cenovnik', label: 'Cenovnik', icon: Tag },
+  { to: '/cenovnik', label: 'Cenovnik', icon: Tag, ownerOnly: true },
+  { to: '/izvestaji', label: 'Izveštaji', icon: BarChart3, ownerOnly: true },
 ];
 
 export default function Layout({ children }: LayoutProps) {
