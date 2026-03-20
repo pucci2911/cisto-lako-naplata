@@ -16,7 +16,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     if (login(email, password)) {
-      navigate('/');
+      navigate('/kontrolna-tabla');
     } else {
       setError('Pogrešan email ili lozinka.');
     }

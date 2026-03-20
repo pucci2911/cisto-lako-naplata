@@ -26,7 +26,7 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col">
       <header className="bg-card border-b sticky top-0 z-30 no-print">
         <div className="container flex items-center justify-between h-16">
-          <Link to="/" className="text-title font-bold text-primary tracking-tight">Čisto</Link>
+          <Link to="/kontrolna-tabla" className="text-title font-bold text-primary tracking-tight">Čisto</Link>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name}</span>
             <button onClick={handleLogout} className="p-2 rounded-md hover:bg-muted text-muted-foreground" title="Odjavi se">
