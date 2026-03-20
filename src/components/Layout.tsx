@@ -40,7 +40,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="w-56 bg-card border-r hidden md:block no-print shrink-0">
           <div className="p-4 space-y-1">
             {navItems.map(item => {
-              if (item.to === '/cenovnik' && user?.role === 'employee') return null;
+              if ((item as any).ownerOnly && user?.role === 'employee') return null;
               const active = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
               return (
                 <Link key={item.to} to={item.to}
