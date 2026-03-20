@@ -15,6 +15,8 @@ import CustomersList from "@/pages/CustomersList";
 import CustomerDetail from "@/pages/CustomerDetail";
 import PriceListPage from "@/pages/PriceListPage";
 import SettingsPage from "@/pages/SettingsPage";
+import ReportsPage from "@/pages/ReportsPage";
+import StaffPage from "@/pages/StaffPage";
 import StatusCheck from "@/pages/StatusCheck";
 import NotFound from "@/pages/NotFound";
 import React from "react";
