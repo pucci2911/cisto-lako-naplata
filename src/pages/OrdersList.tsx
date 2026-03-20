@@ -28,14 +28,10 @@ export default function OrdersList() {
     .filter(o => {
       if (!dateFrom && !dateTo) return true;
       const received = new Date(o.receivedAt);
-      received.setHours(0, 0, 0, 0);
-      if (dateFrom && dateTo) {
-        const from = new Date(dateFrom);
-        const to = new Date(dateTo);
-        to.setHours(23, 59, 59, 999);
-        return received >= from && received <= to;
-      }
-      return true;
+      const receivedDateStr = `${received.getFullYear()}-${String(received.getMonth() + 1).padStart(2, '0')}-${String(received.getDate()).padStart(2, '0')}`;
+      if (dateFrom && !dateTo) return receivedDateStr >= dateFrom;
+      if (!dateFrom && dateTo) return receivedDateStr <= dateTo;
+      return receivedDateStr >= dateFrom && receivedDateStr <= dateTo;
     })
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
 
