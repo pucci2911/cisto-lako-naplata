@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/store/auth";
 import { seedIfNeeded } from "@/store/data";
 import Layout from "@/components/Layout";
 import Login from "@/pages/Login";
+import LandingPage from "@/pages/LandingPage";
 import Dashboard from "@/pages/Dashboard";
 import OrdersList from "@/pages/OrdersList";
 import NewOrder from "@/pages/NewOrder";
@@ -28,7 +29,7 @@ const queryClient = new QueryClient();
 function ProtectedRoute({ children, ownerOnly = false }: { children: React.ReactNode; ownerOnly?: boolean }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (ownerOnly && user.role !== 'owner') return <Navigate to="/" replace />;
+  if (ownerOnly && user.role !== 'owner') return <Navigate to="/kontrolna-tabla" replace />;
   return <Layout>{children}</Layout>;
 }
 
@@ -40,10 +41,11 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/proveri-porudzbinu" element={<StatusCheck />} />
             <Route path="/status" element={<StatusCheck />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/kontrolna-tabla" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/porudzbine" element={<ProtectedRoute><OrdersList /></ProtectedRoute>} />
             <Route path="/nova-porudzbina" element={<ProtectedRoute><NewOrder /></ProtectedRoute>} />
             <Route path="/porudzbine/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />

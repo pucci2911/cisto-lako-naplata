@@ -72,10 +72,32 @@
 }
 
 @media print {
-  .no-print {
+  .no-print,
+  nav,
+  aside,
+  header,
+  button,
+  [data-sidebar],
+  .sidebar {
     display: none !important;
   }
-  body {
+
+  body,
+  main,
+  .bg-background,
+  .bg-card,
+  .bg-muted {
     background: white !important;
+    color: black !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  .print-ticket {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
   }
 }
