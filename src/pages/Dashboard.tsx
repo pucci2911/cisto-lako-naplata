@@ -19,12 +19,59 @@ export default function Dashboard() {
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 20);
 
+  // Overdue orders: dueDate in past, not Preuzeto/Otkazano
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdueOrders = orders.filter(o => {
+    const due = new Date(o.dueDate);
+    due.setHours(0, 0, 0, 0);
+    return due < today && o.status !== 'Preuzeto' && o.status !== 'Otkazano';
+  });
+
   const cards = [
     { label: 'Aktivne porudžbine', value: activeOrders.length, color: 'border-l-primary' },
     { label: 'Danas na čekanju', value: todayDue.length, color: 'border-l-warning' },
     { label: 'Spremno za preuzimanje', value: ready.length, color: 'border-l-success' },
     { label: 'Neplaćeno ili delimično', value: unpaid.length, color: 'border-l-destructive' },
   ];
+
+  const renderOrderTable = (orderList: typeof orders, emptyMsg: string, highlight?: boolean) => (
+    <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-muted/50">
+              <th className="text-left px-4 py-3 font-medium">Br. porudžbine</th>
+              <th className="text-left px-4 py-3 font-medium">Kupac</th>
+              <th className="text-left px-4 py-3 font-medium">Status</th>
+              <th className="text-left px-4 py-3 font-medium">Datum preuzimanja</th>
+              <th className="text-right px-4 py-3 font-medium">Ukupno</th>
+              <th className="text-left px-4 py-3 font-medium">Plaćanje</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orderList.map(order => {
+              const customer = getCustomer(order.customerId);
+              return (
+                <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
+                  className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${highlight ? 'bg-red-50' : ''}`}>
+                  <td className="px-4 py-3 font-mono font-semibold">{order.orderNumber}</td>
+                  <td className="px-4 py-3">{customer?.fullName || '—'}</td>
+                  <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
+                  <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
+                  <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
+                  <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{order.paymentStatus}</span></td>
+                </tr>
+              );
+            })}
+            {orderList.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{emptyMsg}</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -45,41 +92,14 @@ export default function Dashboard() {
       </div>
 
       <h2 className="text-lg font-semibold mb-3">Današnje porudžbine</h2>
-      <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left px-4 py-3 font-medium">Br. porudžbine</th>
-                <th className="text-left px-4 py-3 font-medium">Kupac</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Datum preuzimanja</th>
-                <th className="text-right px-4 py-3 font-medium">Ukupno</th>
-                <th className="text-left px-4 py-3 font-medium">Plaćanje</th>
-              </tr>
-            </thead>
-            <tbody>
-              {todayOrders.map(order => {
-                const customer = getCustomer(order.customerId);
-                return (
-                  <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
-                    className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors">
-                    <td className="px-4 py-3 font-mono font-semibold">{order.orderNumber}</td>
-                    <td className="px-4 py-3">{customer?.fullName || '—'}</td>
-                    <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
-                    <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
-                    <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
-                    <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{order.paymentStatus}</span></td>
-                  </tr>
-                );
-              })}
-              {todayOrders.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nema aktivnih porudžbina.</td></tr>
-              )}
-            </tbody>
-          </table>
+      {renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
+
+      {overdueOrders.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-3 text-destructive">Zakašnjele porudžbine</h2>
+          {renderOrderTable(overdueOrders, '', true)}
         </div>
-      </div>
+      )}
     </div>
   );
 }
