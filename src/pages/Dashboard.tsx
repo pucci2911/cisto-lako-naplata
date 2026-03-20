@@ -96,7 +96,7 @@ export default function Dashboard() {
 
       {overdueOrders.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold mb-3 text-destructive">Zakašnjele porudžbine</h2>
+          <h2 className="text-lg font-semibold mb-3 text-destructive">Zakasnele porudžbine</h2>
           {renderOrderTable(overdueOrders, '', true)}
         </div>
       )}
