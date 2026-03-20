@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getOrder, getCustomer, getOrderItems, updateOrder, updateOrderItem, getSettings } from '@/store/data';
 import { formatDate, formatDateTime, formatPrice, statusColor, paymentStatusColor } from '@/lib/format';
+import { addAuditEntry, getAuditEntries } from '@/store/audit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
