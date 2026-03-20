@@ -27,11 +27,12 @@ export default function OrdersList() {
     })
     .filter(o => {
       if (!dateFrom && !dateTo) return true;
-      const received = new Date(o.receivedAt);
-      const receivedDateStr = `${received.getFullYear()}-${String(received.getMonth() + 1).padStart(2, '0')}-${String(received.getDate()).padStart(2, '0')}`;
-      if (dateFrom && !dateTo) return receivedDateStr >= dateFrom;
-      if (!dateFrom && dateTo) return receivedDateStr <= dateTo;
-      return receivedDateStr >= dateFrom && receivedDateStr <= dateTo;
+      // Filter by dueDate since that's the date column displayed in the table
+      const due = o.dueDate; // stored as YYYY-MM-DD
+      console.log(`[DateFilter] Order ${o.orderNumber}: dueDate=${due}, filterFrom=${dateFrom}, filterTo=${dateTo}, pass=${(!dateFrom || due >= dateFrom) && (!dateTo || due <= dateTo)}`);
+      if (dateFrom && !dateTo) return due >= dateFrom;
+      if (!dateFrom && dateTo) return due <= dateTo;
+      return due >= dateFrom && due <= dateTo;
     })
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
 
