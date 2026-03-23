@@ -18,6 +18,7 @@ interface DraftItem {
   quantity: number;
   unitPrice: number;
   upchargeAmount: number;
+  note: string;
   stainNotes: string;
   damageNotes: string;
   specialInstructions: string;
