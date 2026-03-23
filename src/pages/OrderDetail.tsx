@@ -152,6 +152,9 @@ export default function OrderDetail() {
                   {item.itemStatus}
                 </span>
               </div>
+              {item.note && (
+                <p className="mt-1 text-sm text-muted-foreground italic">📝 {item.note}</p>
+              )}
               {(item.stainNotes || item.damageNotes || item.specialInstructions) && (
                 <div className="mt-2 text-sm text-muted-foreground space-y-1">
                   {item.stainNotes && <p>Fleke: {item.stainNotes}</p>}

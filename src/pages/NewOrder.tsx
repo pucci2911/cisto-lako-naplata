@@ -18,6 +18,7 @@ interface DraftItem {
   quantity: number;
   unitPrice: number;
   upchargeAmount: number;
+  note: string;
   stainNotes: string;
   damageNotes: string;
   specialInstructions: string;
@@ -85,7 +86,7 @@ export default function NewOrder() {
     setItems(prev => [...prev, {
       id: crypto.randomUUID(), itemName: pl.itemName, category: pl.category,
       quantity: 1, unitPrice: pl.basePrice, upchargeAmount: 0,
-      stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
+      note: '', stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
     }]);
     markDirty();
   };
@@ -95,7 +96,7 @@ export default function NewOrder() {
     setItems(prev => [...prev, {
       id: crypto.randomUUID(), itemName: manualName, category: manualCategory,
       quantity: manualQty, unitPrice: manualPrice, upchargeAmount: 0,
-      stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
+      note: '', stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
     }]);
     setManualName(''); setManualCategory(''); setManualQty(1); setManualPrice(0);
     setShowManualForm(false);
@@ -133,6 +134,7 @@ export default function NewOrder() {
         orderId: order.id, itemName: item.itemName, category: item.category,
         quantity: item.quantity, unitPrice: item.unitPrice,
         upchargeAmount: item.upchargeAmount || undefined,
+        note: item.note || undefined,
         stainNotes: item.stainNotes || undefined,
         damageNotes: item.damageNotes || undefined,
         specialInstructions: item.specialInstructions || undefined,
@@ -282,6 +284,10 @@ export default function NewOrder() {
                       <Trash2 size={16} />
                     </button>
                   </div>
+                </div>
+                <div className="mt-2">
+                  <Input value={item.note} onChange={e => updateItem(item.id, 'note', e.target.value)}
+                    className="h-8 text-sm" placeholder="Napomena (npr. fali dugme, fleka na rukavu...)" />
                 </div>
                 {item.showNotes && (
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
