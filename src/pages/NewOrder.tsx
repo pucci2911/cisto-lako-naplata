@@ -285,6 +285,10 @@ export default function NewOrder() {
                     </button>
                   </div>
                 </div>
+                <div className="mt-2">
+                  <Input value={item.note} onChange={e => updateItem(item.id, 'note', e.target.value)}
+                    className="h-8 text-sm" placeholder="Napomena (npr. fali dugme, fleka na rukavu...)" />
+                </div>
                 {item.showNotes && (
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>

@@ -47,11 +47,18 @@ export default function ClaimTicket({ orderId }: Props) {
           </thead>
           <tbody>
             {items.map(item => (
-              <tr key={item.id} className="border-b border-dashed">
-                <td className="py-1">{item.itemName}</td>
-                <td className="py-1 text-center">{item.quantity}</td>
-                <td className="py-1 text-right">{formatPrice((item.unitPrice + (item.upchargeAmount || 0)) * item.quantity)}</td>
-              </tr>
+              <React.Fragment key={item.id}>
+                <tr className="border-b border-dashed">
+                  <td className="py-1">{item.itemName}</td>
+                  <td className="py-1 text-center">{item.quantity}</td>
+                  <td className="py-1 text-right">{formatPrice((item.unitPrice + (item.upchargeAmount || 0)) * item.quantity)}</td>
+                </tr>
+                {item.note && (
+                  <tr>
+                    <td colSpan={3} className="py-0 pb-1 text-xs text-gray-500 italic pl-2">📝 {item.note}</td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
