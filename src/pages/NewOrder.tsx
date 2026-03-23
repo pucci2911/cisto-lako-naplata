@@ -86,7 +86,7 @@ export default function NewOrder() {
     setItems(prev => [...prev, {
       id: crypto.randomUUID(), itemName: pl.itemName, category: pl.category,
       quantity: 1, unitPrice: pl.basePrice, upchargeAmount: 0,
-      stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
+      note: '', stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
     }]);
     markDirty();
   };
