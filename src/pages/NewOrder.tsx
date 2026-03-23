@@ -96,7 +96,7 @@ export default function NewOrder() {
     setItems(prev => [...prev, {
       id: crypto.randomUUID(), itemName: manualName, category: manualCategory,
       quantity: manualQty, unitPrice: manualPrice, upchargeAmount: 0,
-      stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
+      note: '', stainNotes: '', damageNotes: '', specialInstructions: '', showNotes: false,
     }]);
     setManualName(''); setManualCategory(''); setManualQty(1); setManualPrice(0);
     setShowManualForm(false);
