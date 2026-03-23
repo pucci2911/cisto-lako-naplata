@@ -4,6 +4,7 @@ import { getOrders, getCustomer } from '@/store/data';
 import { formatDate, formatPrice, statusColor, paymentStatusColor, isToday } from '@/lib/format';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DashboardStats from '@/components/DashboardStats';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Dashboard() {
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 20);
 
-  // Overdue orders: dueDate in past, not Preuzeto/Otkazano
+  // Overdue orders
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const overdueOrders = orders.filter(o => {
@@ -34,6 +35,15 @@ export default function Dashboard() {
     { label: 'Spremno za preuzimanje', value: ready.length, color: 'border-l-success' },
     { label: 'Neplaćeno ili delimično', value: unpaid.length, color: 'border-l-destructive' },
   ];
+
+  // Daily data for last 7 days
+  const dailyData = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dateStr = d.toISOString().split('T')[0];
+    const count = orders.filter(o => o.receivedAt.startsWith(dateStr)).length;
+    return { date: `${d.getDate()}.${d.getMonth() + 1}.`, count };
+  });
 
   const renderOrderTable = (orderList: typeof orders, emptyMsg: string, highlight?: boolean) => (
     <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
@@ -82,14 +92,7 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {cards.map(card => (
-          <div key={card.label} className={`bg-card rounded-xl p-5 shadow-sm shadow-black/5 border-l-4 ${card.color}`}>
-            <p className="text-sm text-muted-foreground mb-1">{card.label}</p>
-            <p className="text-3xl font-bold">{card.value}</p>
-          </div>
-        ))}
-      </div>
+      <DashboardStats cards={cards} dailyData={dailyData} />
 
       <h2 className="text-lg font-semibold mb-3">Današnje porudžbine</h2>
       {renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
