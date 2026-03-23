@@ -62,13 +62,28 @@ export default function DashboardStats({ cards, dailyData }: DashboardStatsProps
   }
 
   if (mode === 'bar') {
+    const BAR_LABELS: Record<string, [string, string]> = {
+      'Aktivne porudžbine': ['Aktivne', 'porudžbine'],
+      'Danas na čekanju': ['Danas na', 'čekanju'],
+      'Spremno za preuzimanje': ['Spremno za', 'preuzimanje'],
+      'Neplaćeno ili delimično': ['Neplaćeno', 'ili delimično'],
+    };
     const barData = cards.map((c, i) => ({ name: c.label, value: c.value, fill: PIE_COLORS[i] }));
+    const renderBarTick = ({ x, y, payload }: any) => {
+      const lines = BAR_LABELS[payload.value] || [payload.value, ''];
+      return (
+        <text x={x} y={y + 12} textAnchor="middle" fontSize={11} fill="currentColor" className="fill-muted-foreground">
+          <tspan x={x} dy="0">{lines[0]}</tspan>
+          <tspan x={x} dy="14">{lines[1]}</tspan>
+        </text>
+      );
+    };
     return (
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-8">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">Poređenje statistika</h3>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={barData} barSize={48}>
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} tickFormatter={(v: string) => v.length > 12 ? v.slice(0, 12) + '…' : v} />
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={barData} barSize={48} margin={{ bottom: 20 }}>
+            <XAxis dataKey="name" tick={renderBarTick} interval={0} tickLine={false} />
             <YAxis allowDecimals={false} />
             <Tooltip />
             <Bar dataKey="value" radius={[6, 6, 0, 0]}>
