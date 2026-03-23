@@ -134,6 +134,7 @@ export default function NewOrder() {
         orderId: order.id, itemName: item.itemName, category: item.category,
         quantity: item.quantity, unitPrice: item.unitPrice,
         upchargeAmount: item.upchargeAmount || undefined,
+        note: item.note || undefined,
         stainNotes: item.stainNotes || undefined,
         damageNotes: item.damageNotes || undefined,
         specialInstructions: item.specialInstructions || undefined,
