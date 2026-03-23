@@ -134,6 +134,7 @@ const defaultSettings: ShopSettings = {
   email: 'info@cisto.rs',
   defaultTurnaroundDays: 3,
   receiptFooterText: 'Molimo donesite ovaj listić pri preuzimanju.',
+  dashboardDisplay: 'kartice',
 };
 
 // Seed

@@ -63,6 +63,8 @@ export interface AppUser {
   active: boolean;
 }
 
+export type DashboardDisplayMode = 'kartice' | 'pie' | 'bar' | 'line';
+
 export interface ShopSettings {
   shopName: string;
   address: string;
@@ -70,4 +72,5 @@ export interface ShopSettings {
   email: string;
   defaultTurnaroundDays: number;
   receiptFooterText: string;
+  dashboardDisplay: DashboardDisplayMode;
 }
