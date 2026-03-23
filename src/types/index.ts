@@ -41,6 +41,7 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   upchargeAmount?: number;
+  note?: string;
   stainNotes?: string;
   damageNotes?: string;
   specialInstructions?: string;
