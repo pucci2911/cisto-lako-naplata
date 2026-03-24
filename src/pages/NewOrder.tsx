@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ClaimTicket from '@/components/ClaimTicket';
 import { Trash2, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import type { Customer, PaymentMethod, PaymentStatus, OrderItem } from '@/types';
 
 interface DraftItem {
@@ -61,6 +62,7 @@ export default function NewOrder() {
   // Saved order
   const [savedOrderId, setSavedOrderId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const totalPrice = items.reduce((sum, i) => sum + (i.unitPrice + i.upchargeAmount) * i.quantity, 0);
   const amountDue = totalPrice - amountPaid;
@@ -119,30 +121,38 @@ export default function NewOrder() {
   };
 
   const handleSave = () => {
-    if (!selectedCustomer || items.length === 0) return;
-    const order = saveOrder({
-      customerId: selectedCustomer.id,
-      dueDate, status: 'Primljeno',
-      paymentStatus, paymentMethod,
-      totalPrice, amountPaid,
-      rackLocation: rackLocation || undefined,
-      internalNotes: internalNotes || undefined,
-      customerNote: customerNote || undefined,
-    });
-    items.forEach(item => {
-      saveOrderItem({
-        orderId: order.id, itemName: item.itemName, category: item.category,
-        quantity: item.quantity, unitPrice: item.unitPrice,
-        upchargeAmount: item.upchargeAmount || undefined,
-        note: item.note || undefined,
-        stainNotes: item.stainNotes || undefined,
-        damageNotes: item.damageNotes || undefined,
-        specialInstructions: item.specialInstructions || undefined,
-        itemStatus: 'Na cekanju',
+    if (!selectedCustomer || items.length === 0 || saving) return;
+    setSaving(true);
+    try {
+      const order = saveOrder({
+        customerId: selectedCustomer.id,
+        dueDate, status: 'Primljeno',
+        paymentStatus, paymentMethod,
+        totalPrice, amountPaid,
+        rackLocation: rackLocation || undefined,
+        internalNotes: internalNotes || undefined,
+        customerNote: customerNote || undefined,
       });
-    });
-    setIsDirty(false);
-    setSavedOrderId(order.id);
+      items.forEach(item => {
+        saveOrderItem({
+          orderId: order.id, itemName: item.itemName, category: item.category,
+          quantity: item.quantity, unitPrice: item.unitPrice,
+          upchargeAmount: item.upchargeAmount || undefined,
+          note: item.note || undefined,
+          stainNotes: item.stainNotes || undefined,
+          damageNotes: item.damageNotes || undefined,
+          specialInstructions: item.specialInstructions || undefined,
+          itemStatus: 'Na cekanju',
+        });
+      });
+      setIsDirty(false);
+      toast.success('Porudžbina uspešno kreirana.');
+      setSavedOrderId(order.id);
+    } catch {
+      toast.error('Greška pri kreiranju porudžbine. Pokušajte ponovo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (savedOrderId) {
@@ -372,10 +382,30 @@ export default function NewOrder() {
         </div>
       </section>
 
-      <Button onClick={handleSave} disabled={!selectedCustomer || items.length === 0}
-        size="lg" className="w-full h-14 text-lg font-semibold">
-        Sačuvaj porudžbinu
-      </Button>
+      {/* Spacer so sticky bar doesn't cover content */}
+      <div className="h-24" />
+
+      {/* Sticky bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-40">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-lg font-bold tabular-nums">{formatPrice(totalPrice)}</p>
+            {!selectedCustomer && items.length === 0 && (
+              <p className="text-sm text-muted-foreground">Izaberite kupca i dodajte artikle</p>
+            )}
+            {!selectedCustomer && items.length > 0 && (
+              <p className="text-sm text-muted-foreground">Izaberite kupca za nastavak</p>
+            )}
+            {selectedCustomer && items.length === 0 && (
+              <p className="text-sm text-muted-foreground">Dodajte bar jedan artikal</p>
+            )}
+          </div>
+          <Button onClick={handleSave} disabled={!selectedCustomer || items.length === 0 || saving}
+            size="lg" className="h-14 px-8 text-lg font-semibold shrink-0">
+            {saving ? 'Čuvanje...' : 'Kreiraj porudžbinu'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
