@@ -158,8 +158,9 @@ export default function NewOrder() {
   if (savedOrderId) {
     return (
       <div>
-        <div className="mb-4 no-print">
-          <Button variant="outline" onClick={() => navigate('/kontrolna-tabla')}>← Nazad na kontrolnu tablu</Button>
+        <div className="mb-4 no-print flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/porudzbine')}>← Lista porudžbina</Button>
+          <Button variant="outline" onClick={() => navigate('/kontrolna-tabla')}>Kontrolna tabla</Button>
         </div>
         <ClaimTicket orderId={savedOrderId} />
       </div>
