@@ -14,7 +14,7 @@ export default function PriceList() {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
-  const [price, setPrice] = useState<number | string>('');
+  const [price, setPrice] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; category?: string; price?: string }>({});
 
@@ -62,7 +62,7 @@ export default function PriceList() {
   const startEdit = (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item) return;
-    setEditId(id); setName(item.itemName); setCategory(item.category); setPrice(item.basePrice);
+    setEditId(id); setName(item.itemName); setCategory(item.category); setPrice(String(item.basePrice));
     setErrors({});
   };
 
@@ -70,7 +70,7 @@ export default function PriceList() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-title">Cenovnik</h1>
-        <Button onClick={() => { setShowAdd(true); setEditId(null); setName(''); setCategory(''); setPrice(''); setErrors({}); }} className="gap-2">
+        <Button onClick={() => { setShowAdd(true); setEditId(null); setName(''); setCategory(''); setPrice(''); setErrors({}); setSaving(false); }} className="gap-2">
           <Plus size={16} /> Dodaj stavku
         </Button>
       </div>
