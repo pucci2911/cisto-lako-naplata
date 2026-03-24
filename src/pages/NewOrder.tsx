@@ -372,10 +372,30 @@ export default function NewOrder() {
         </div>
       </section>
 
-      <Button onClick={handleSave} disabled={!selectedCustomer || items.length === 0}
-        size="lg" className="w-full h-14 text-lg font-semibold">
-        Sačuvaj porudžbinu
-      </Button>
+      {/* Spacer so sticky bar doesn't cover content */}
+      <div className="h-24" />
+
+      {/* Sticky bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-40">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-lg font-bold tabular-nums">{formatPrice(totalPrice)}</p>
+            {!selectedCustomer && items.length === 0 && (
+              <p className="text-sm text-muted-foreground">Izaberite kupca i dodajte artikle</p>
+            )}
+            {!selectedCustomer && items.length > 0 && (
+              <p className="text-sm text-muted-foreground">Izaberite kupca za nastavak</p>
+            )}
+            {selectedCustomer && items.length === 0 && (
+              <p className="text-sm text-muted-foreground">Dodajte bar jedan artikal</p>
+            )}
+          </div>
+          <Button onClick={handleSave} disabled={!selectedCustomer || items.length === 0 || saving}
+            size="lg" className="h-14 px-8 text-lg font-semibold shrink-0">
+            {saving ? 'Čuvanje...' : 'Kreiraj porudžbinu'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
