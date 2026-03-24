@@ -70,7 +70,7 @@ export default function PriceList() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-title">Cenovnik</h1>
-        <Button onClick={() => { setShowAdd(true); setEditId(null); setName(''); setCategory(''); setPrice(''); setErrors({}); }} className="gap-2">
+        <Button onClick={() => { setShowAdd(true); setEditId(null); setName(''); setCategory(''); setPrice(''); setErrors({}); setSaving(false); }} className="gap-2">
           <Plus size={16} /> Dodaj stavku
         </Button>
       </div>

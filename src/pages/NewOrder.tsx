@@ -387,18 +387,19 @@ export default function NewOrder() {
       <div className="h-24" />
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)] z-40">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-bold tabular-nums">{formatPrice(totalPrice)}</p>
+          <div className="min-w-0">
+            <p className="text-sm text-muted-foreground">Ukupno</p>
+            <p className="text-xl font-bold tabular-nums">{formatPrice(totalPrice)}</p>
             {!selectedCustomer && items.length === 0 && (
-              <p className="text-sm text-muted-foreground">Izaberite kupca i dodajte artikle</p>
+              <p className="text-sm text-destructive mt-0.5">Odaberite kupca i dodajte bar jednu stavku da biste nastavili</p>
             )}
             {!selectedCustomer && items.length > 0 && (
-              <p className="text-sm text-muted-foreground">Izaberite kupca za nastavak</p>
+              <p className="text-sm text-destructive mt-0.5">Odaberite kupca da biste nastavili</p>
             )}
             {selectedCustomer && items.length === 0 && (
-              <p className="text-sm text-muted-foreground">Dodajte bar jedan artikal</p>
+              <p className="text-sm text-destructive mt-0.5">Dodajte bar jednu stavku da biste nastavili</p>
             )}
           </div>
           <Button onClick={handleSave} disabled={!selectedCustomer || items.length === 0 || saving}
