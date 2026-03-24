@@ -62,7 +62,7 @@ export default function PriceList() {
   const startEdit = (id: string) => {
     const item = items.find(i => i.id === id);
     if (!item) return;
-    setEditId(id); setName(item.itemName); setCategory(item.category); setPrice(item.basePrice);
+    setEditId(id); setName(item.itemName); setCategory(item.category); setPrice(String(item.basePrice));
     setErrors({});
   };
 
