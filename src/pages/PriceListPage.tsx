@@ -76,7 +76,7 @@ export default function PriceList() {
       </div>
 
       {showAdd && (
-        <div className="bg-card rounded-xl p-4 shadow-sm shadow-black/5 mb-4 space-y-3">
+        <div className="bg-card rounded-xl p-4 shadow-sm shadow-black/5 mb-4 space-y-3" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-sm">Naziv *</Label>
