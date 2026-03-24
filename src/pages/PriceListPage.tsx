@@ -14,7 +14,7 @@ export default function PriceList() {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
-  const [price, setPrice] = useState<number | string>('');
+  const [price, setPrice] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; category?: string; price?: string }>({});
 
