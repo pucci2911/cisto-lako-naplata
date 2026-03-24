@@ -62,6 +62,7 @@ export default function NewOrder() {
   // Saved order
   const [savedOrderId, setSavedOrderId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const totalPrice = items.reduce((sum, i) => sum + (i.unitPrice + i.upchargeAmount) * i.quantity, 0);
   const amountDue = totalPrice - amountPaid;
