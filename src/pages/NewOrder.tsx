@@ -121,30 +121,38 @@ export default function NewOrder() {
   };
 
   const handleSave = () => {
-    if (!selectedCustomer || items.length === 0) return;
-    const order = saveOrder({
-      customerId: selectedCustomer.id,
-      dueDate, status: 'Primljeno',
-      paymentStatus, paymentMethod,
-      totalPrice, amountPaid,
-      rackLocation: rackLocation || undefined,
-      internalNotes: internalNotes || undefined,
-      customerNote: customerNote || undefined,
-    });
-    items.forEach(item => {
-      saveOrderItem({
-        orderId: order.id, itemName: item.itemName, category: item.category,
-        quantity: item.quantity, unitPrice: item.unitPrice,
-        upchargeAmount: item.upchargeAmount || undefined,
-        note: item.note || undefined,
-        stainNotes: item.stainNotes || undefined,
-        damageNotes: item.damageNotes || undefined,
-        specialInstructions: item.specialInstructions || undefined,
-        itemStatus: 'Na cekanju',
+    if (!selectedCustomer || items.length === 0 || saving) return;
+    setSaving(true);
+    try {
+      const order = saveOrder({
+        customerId: selectedCustomer.id,
+        dueDate, status: 'Primljeno',
+        paymentStatus, paymentMethod,
+        totalPrice, amountPaid,
+        rackLocation: rackLocation || undefined,
+        internalNotes: internalNotes || undefined,
+        customerNote: customerNote || undefined,
       });
-    });
-    setIsDirty(false);
-    setSavedOrderId(order.id);
+      items.forEach(item => {
+        saveOrderItem({
+          orderId: order.id, itemName: item.itemName, category: item.category,
+          quantity: item.quantity, unitPrice: item.unitPrice,
+          upchargeAmount: item.upchargeAmount || undefined,
+          note: item.note || undefined,
+          stainNotes: item.stainNotes || undefined,
+          damageNotes: item.damageNotes || undefined,
+          specialInstructions: item.specialInstructions || undefined,
+          itemStatus: 'Na cekanju',
+        });
+      });
+      setIsDirty(false);
+      toast.success('Porudžbina uspešno kreirana.');
+      setSavedOrderId(order.id);
+    } catch {
+      toast.error('Greška pri kreiranju porudžbine. Pokušajte ponovo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (savedOrderId) {
