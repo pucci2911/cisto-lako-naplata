@@ -384,10 +384,10 @@ export default function NewOrder() {
       </section>
 
       {/* Spacer so sticky bar doesn't cover content */}
-      <div className="h-24" />
+      <div className="h-32 md:h-24" />
 
-      {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)] z-40">
+      {/* Sticky bottom bar - offset for sidebar on desktop, above mobile nav on mobile */}
+      <div className="fixed bottom-14 md:bottom-0 md:left-56 left-0 right-0 bg-card border-t shadow-[0_-4px_12px_rgba(0,0,0,0.08)] z-40">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">Ukupno</p>
