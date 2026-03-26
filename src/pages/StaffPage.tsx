@@ -40,7 +40,7 @@ export default function StaffPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-title">Zaposleni</h1>
         <Button onClick={() => setShowAdd(true)} disabled={showAdd} className="h-11">
-          Dodaj zaposlenog
+          + Dodaj zaposlenog
         </Button>
       </div>
 
