@@ -39,8 +39,8 @@ export default function StaffPage() {
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-title">Zaposleni</h1>
-        <Button onClick={() => setShowAdd(!showAdd)} className="h-11">
-          {showAdd ? 'Otkaži' : 'Dodaj zaposlenog'}
+        <Button onClick={() => setShowAdd(true)} disabled={showAdd} className="h-11">
+          Dodaj zaposlenog
         </Button>
       </div>
 
@@ -51,7 +51,10 @@ export default function StaffPage() {
           <div><Label className="text-sm">Ime i prezime</Label><Input value={name} onChange={e => setName(e.target.value)} className="h-11" /></div>
           <div><Label className="text-sm">Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-11" /></div>
           <div><Label className="text-sm">Početna lozinka</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-11" /></div>
-          <Button onClick={handleAdd} className="h-11">Sačuvaj</Button>
+          <div className="flex gap-3">
+            <Button onClick={handleAdd} className="h-11">Sačuvaj</Button>
+            <Button variant="outline" onClick={() => { setShowAdd(false); setName(''); setEmail(''); setPassword(''); setError(''); }} className="h-11">Otkaži</Button>
+          </div>
         </div>
       )}
 
