@@ -29,6 +29,18 @@ export default function ReportsPage() {
     { label: 'Neplaćene ili delimično plaćene', value: `${unpaidCount} (${formatPrice(unpaidTotal)})` },
   ];
 
+  if (orders.length === 0) {
+    return (
+      <div>
+        <h1 className="text-title mb-6">Izveštaji</h1>
+        <div className="bg-card rounded-xl shadow-sm shadow-black/5 px-4 py-12 text-center">
+          <p className="text-muted-foreground font-medium">Nema podataka za prikaz izveštaja.</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">Podaci će se prikazati kada budu kreirane prve porudžbine.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1 className="text-title mb-6">Izveštaji</h1>
