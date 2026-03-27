@@ -116,6 +116,12 @@ export default function PriceList() {
               </tr>
             </thead>
             <tbody>
+              {items.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-12 text-center">
+                  <p className="text-muted-foreground font-medium">Cenovnik je prazan.</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Dodajte prvu stavku klikom na dugme iznad.</p>
+                </td></tr>
+              )}
               {items.map(item => (
                 <tr key={item.id} className="border-b last:border-0">
                   {editId === item.id ? (

@@ -15,7 +15,8 @@ export default function OrdersList() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const orders = getOrders()
+  const allOrders = getOrders();
+  const orders = allOrders
     .filter(o => filter === 'Sve' || o.status === filter)
     .filter(o => {
       if (!search) return true;
@@ -27,14 +28,14 @@ export default function OrdersList() {
     })
     .filter(o => {
       if (!dateFrom && !dateTo) return true;
-      // Filter by dueDate since that's the date column displayed in the table
-      const due = o.dueDate; // stored as YYYY-MM-DD
-      console.log(`[DateFilter] Order ${o.orderNumber}: dueDate=${due}, filterFrom=${dateFrom}, filterTo=${dateTo}, pass=${(!dateFrom || due >= dateFrom) && (!dateTo || due <= dateTo)}`);
+      const due = o.dueDate;
       if (dateFrom && !dateTo) return due >= dateFrom;
       if (!dateFrom && dateTo) return due <= dateTo;
       return due >= dateFrom && due <= dateTo;
     })
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+
+  const resetFilters = () => { setFilter('Sve'); setSearch(''); setDateFrom(''); setDateTo(''); };
 
   return (
     <div>
@@ -98,8 +99,17 @@ export default function OrdersList() {
                   </tr>
                 );
               })}
-              {orders.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nema porudžbina.</td></tr>
+              {orders.length === 0 && allOrders.length === 0 && (
+                <tr><td colSpan={7} className="px-4 py-12 text-center">
+                  <p className="text-muted-foreground font-medium">Još uvek nema porudžbina.</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Kreirajte prvu porudžbinu klikom na dugme iznad.</p>
+                </td></tr>
+              )}
+              {orders.length === 0 && allOrders.length > 0 && (
+                <tr><td colSpan={7} className="px-4 py-12 text-center">
+                  <p className="text-muted-foreground font-medium">Nema porudžbina za zadate filtere.</p>
+                  <button onClick={resetFilters} className="text-sm text-primary hover:underline mt-2 inline-block">Resetuj filtere</button>
+                </td></tr>
               )}
             </tbody>
           </table>

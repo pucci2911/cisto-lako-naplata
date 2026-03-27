@@ -70,6 +70,12 @@ export default function StaffPage() {
             </tr>
           </thead>
           <tbody>
+            {users.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-12 text-center">
+                <p className="text-muted-foreground font-medium">Nema zaposlenih.</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Dodajte prvog zaposlenog klikom na dugme iznad.</p>
+              </td></tr>
+            )}
             {users.map(user => (
               <tr key={user.id} className="border-b last:border-0">
                 <td className="px-4 py-3 font-medium">{user.name}</td>
