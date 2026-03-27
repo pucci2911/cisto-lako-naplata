@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 import type { ShopSettings, DashboardDisplayMode } from '@/types';
 
 const DISPLAY_OPTIONS: { value: DashboardDisplayMode; label: string; description: string }[] = [
@@ -16,16 +17,23 @@ const DISPLAY_OPTIONS: { value: DashboardDisplayMode; label: string; description
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<ShopSettings>(getSettings());
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const update = (field: keyof ShopSettings, value: any) => {
     setSettings(prev => ({ ...prev, [field]: value }));
-    setSaved(false);
   };
 
   const handleSave = () => {
-    saveSettings(settings);
-    setSaved(true);
+    if (saving) return;
+    setSaving(true);
+    try {
+      saveSettings(settings);
+      toast.success('Podešavanja su sačuvana.');
+    } catch {
+      toast.error('Greška pri čuvanju podešavanja. Pokušajte ponovo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -39,8 +47,7 @@ export default function SettingsPage() {
         <div><Label className="text-sm">Podrazumevani broj dana za gotovost</Label><Input type="number" min={1} value={settings.defaultTurnaroundDays} onChange={e => update('defaultTurnaroundDays', Number(e.target.value))} className="h-11 w-32" /></div>
         <div><Label className="text-sm">Tekst na dnu računa</Label><Textarea value={settings.receiptFooterText} onChange={e => update('receiptFooterText', e.target.value)} rows={2} /></div>
         <div className="flex items-center gap-3">
-          <Button onClick={handleSave} className="h-11">Sačuvaj podešavanja</Button>
-          {saved && <span className="text-sm text-success">Sačuvano!</span>}
+          <Button onClick={handleSave} disabled={saving} className="h-11">{saving ? 'Čuvanje...' : 'Sačuvaj podešavanja'}</Button>
         </div>
       </div>
 
@@ -65,8 +72,7 @@ export default function SettingsPage() {
           ))}
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <Button onClick={handleSave} className="h-11">Sačuvaj podešavanja</Button>
-          {saved && <span className="text-sm text-success">Sačuvano!</span>}
+          <Button onClick={handleSave} disabled={saving} className="h-11">{saving ? 'Čuvanje...' : 'Sačuvaj podešavanja'}</Button>
         </div>
       </div>
 

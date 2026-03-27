@@ -3,6 +3,7 @@ import { getUsers, saveUser, updateUser } from '@/store/data';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 import type { AppUser } from '@/types';
 
 export default function StaffPage() {
@@ -12,6 +13,7 @@ export default function StaffPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const refresh = () => setUsers(getUsers());
 
@@ -24,9 +26,18 @@ export default function StaffPage() {
       setError('Korisnik sa tim emailom već postoji.');
       return;
     }
-    saveUser({ name: name.trim(), email: email.trim(), role: 'employee', active: true, password: password.trim() });
-    setName(''); setEmail(''); setPassword(''); setShowAdd(false); setError('');
-    refresh();
+    if (saving) return;
+    setSaving(true);
+    try {
+      saveUser({ name: name.trim(), email: email.trim(), role: 'employee', active: true, password: password.trim() });
+      toast.success('Zaposleni je uspešno dodat.');
+      setName(''); setEmail(''); setPassword(''); setShowAdd(false); setError('');
+      refresh();
+    } catch {
+      toast.error('Greška pri dodavanju zaposlenog. Pokušajte ponovo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleActive = (user: AppUser) => {
@@ -52,7 +63,7 @@ export default function StaffPage() {
           <div><Label className="text-sm">Email</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-11" /></div>
           <div><Label className="text-sm">Početna lozinka</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-11" /></div>
           <div className="flex gap-3">
-            <Button onClick={handleAdd} className="h-11">Sačuvaj</Button>
+            <Button onClick={handleAdd} disabled={saving} className="h-11">{saving ? 'Čuvanje...' : 'Sačuvaj'}</Button>
             <Button variant="outline" onClick={() => { setShowAdd(false); setName(''); setEmail(''); setPassword(''); setError(''); }} className="h-11">Otkaži</Button>
           </div>
         </div>
