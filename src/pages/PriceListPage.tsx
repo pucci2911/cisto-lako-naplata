@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { getPriceList, savePriceListItem, updatePriceListItem } from '@/store/data';
 import { formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plus } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function PriceList() {
   const [, forceRender] = useState(0);
@@ -17,8 +19,40 @@ export default function PriceList() {
   const [price, setPrice] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; category?: string; price?: string }>({});
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const items = getPriceList();
+
+  const sorted = useMemo(() =>
+    [...items].sort((a, b) => {
+      const cat = a.category.localeCompare(b.category, 'sr');
+      return cat !== 0 ? cat : a.itemName.localeCompare(b.itemName, 'sr');
+    }),
+    [items]
+  );
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return sorted;
+    const q = search.trim().toLowerCase();
+    return sorted.filter(i =>
+      i.itemName.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)
+    );
+  }, [sorted, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const clearSearch = () => {
+    setSearch('');
+    setPage(1);
+  };
 
   const validate = (): boolean => {
     const e: typeof errors = {};
@@ -66,6 +100,10 @@ export default function PriceList() {
     setErrors({});
   };
 
+  const hasSearch = search.trim().length > 0;
+  const noResults = hasSearch && filtered.length === 0;
+  const noData = items.length === 0;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -74,6 +112,26 @@ export default function PriceList() {
           <Plus size={16} /> Dodaj stavku
         </Button>
       </div>
+
+      {!noData && (
+        <div className="mb-4 relative max-w-sm">
+          <Input
+            placeholder="Pretraži stavke..."
+            value={search}
+            onChange={e => handleSearchChange(e.target.value)}
+            className="h-11 pr-9"
+          />
+          {hasSearch && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Obriši pretragu"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      )}
 
       {showAdd && (
         <div className="bg-card rounded-xl p-4 shadow-sm shadow-black/5 mb-4 space-y-3" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}>
@@ -116,13 +174,19 @@ export default function PriceList() {
               </tr>
             </thead>
             <tbody>
-              {items.length === 0 && (
+              {noData && (
                 <tr><td colSpan={5} className="px-4 py-12 text-center">
                   <p className="text-muted-foreground font-medium">Cenovnik je prazan.</p>
                   <p className="text-sm text-muted-foreground/70 mt-1">Dodajte prvu stavku klikom na dugme iznad.</p>
                 </td></tr>
               )}
-              {items.map(item => (
+              {noResults && (
+                <tr><td colSpan={5} className="px-4 py-12 text-center">
+                  <p className="text-muted-foreground font-medium">Nema stavki za uneti pojam.</p>
+                  <button onClick={clearSearch} className="text-sm text-primary hover:underline mt-1">Obriši pretragu</button>
+                </td></tr>
+              )}
+              {paginated.map(item => (
                 <tr key={item.id} className="border-b last:border-0">
                   {editId === item.id ? (
                     <>
@@ -163,6 +227,32 @@ export default function PriceList() {
           </table>
         </div>
       </div>
+
+      {filtered.length > ITEMS_PER_PAGE && (
+        <div className="flex items-center justify-between mt-4 px-1">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={safePage <= 1}
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            className="gap-1"
+          >
+            <ChevronLeft size={14} /> Prethodna
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Strana {safePage} od {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={safePage >= totalPages}
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            className="gap-1"
+          >
+            Sledeća <ChevronRight size={14} />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
