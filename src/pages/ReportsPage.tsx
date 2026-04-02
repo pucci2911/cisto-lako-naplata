@@ -161,6 +161,7 @@ export default function ReportsPage() {
               {opt.label}
             </button>
           ))}
+          </div>
         </div>
       </div>
 
