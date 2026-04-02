@@ -51,7 +51,7 @@ function getDaysForPeriod(period: Period): string[] {
 export default function ReportsPage() {
   const navigate = useNavigate();
   const orders = getOrders();
-  const [period, setPeriod] = useState<Period>('danas');
+  const [period, setPeriod] = useState<Period>('mesec');
 
   const filtered = useMemo(() => orders.filter(o => isInPeriod(o.receivedAt, period)), [orders, period]);
 
@@ -133,7 +133,7 @@ export default function ReportsPage() {
           <BarChart data={chartData} barSize={period === 'danas' ? 64 : undefined}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickFormatter={(v: number) => formatPrice(v)} />
             <Tooltip formatter={(v: number) => formatPrice(v)} labelFormatter={l => `Dan: ${l}`} />
             <Bar dataKey="prihod" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Prihod" />
           </BarChart>
