@@ -153,7 +153,10 @@ export default function ReportsPage() {
               Štampaj
             </Button>
           </div>
-          <div className="flex gap-1 bg-muted rounded-lg p-1">
+          <p className="hidden print:block text-sm text-muted-foreground">
+            Period: {PERIOD_OPTIONS.find(o => o.value === period)?.label}
+          </p>
+          <div className="flex gap-1 bg-muted rounded-lg p-1 no-print">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.value}
