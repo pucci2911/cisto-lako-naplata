@@ -55,8 +55,46 @@ export default function ReportsPage() {
   const navigate = useNavigate();
   const orders = getOrders();
   const [period, setPeriod] = useState<Period>('mesec');
+  const [exporting, setExporting] = useState(false);
 
   const filtered = useMemo(() => orders.filter(o => isInPeriod(o.receivedAt, period)), [orders, period]);
+
+  const handleExportCSV = useCallback(() => {
+    if (filtered.length === 0) {
+      toast.error('Nema podataka za izvoz');
+      return;
+    }
+    setExporting(true);
+    try {
+      const headers = ['Broj porudžbine', 'Kupac', 'Datum prijema', 'Status', 'Status plaćanja', 'Ukupno', 'Plaćeno', 'Ostatak'];
+      const rows = filtered.map(o => {
+        const customer = getCustomer(o.customerId);
+        return [
+          o.orderNumber,
+          customer?.fullName || '—',
+          formatDate(o.receivedAt),
+          o.status,
+          o.paymentStatus,
+          o.totalPrice,
+          o.amountPaid,
+          o.totalPrice - o.amountPaid,
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      });
+      const csv = '\uFEFF' + [headers.map(h => `"${h}"`).join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `izvestaj-${period}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('CSV izveštaj je uspešno preuzet');
+    } catch {
+      toast.error('Greška pri izvozu');
+    } finally {
+      setExporting(false);
+    }
+  }, [filtered, period]);
 
   const revenueTotal = filtered.reduce((sum, o) => sum + o.amountPaid, 0);
   const ordersReceived = filtered.length;
