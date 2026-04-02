@@ -142,7 +142,12 @@ export default function ReportsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-title">Izveštaji</h1>
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" disabled={exporting} onClick={handleExportCSV}>
+            <Download className="h-4 w-4 mr-1.5" />
+            {exporting ? 'Izvoz...' : 'Izvezi CSV'}
+          </Button>
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.value}
