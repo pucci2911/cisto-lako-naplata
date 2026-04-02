@@ -51,7 +51,7 @@ function getDaysForPeriod(period: Period): string[] {
 export default function ReportsPage() {
   const navigate = useNavigate();
   const orders = getOrders();
-  const [period, setPeriod] = useState<Period>('danas');
+  const [period, setPeriod] = useState<Period>('mesec');
 
   const filtered = useMemo(() => orders.filter(o => isInPeriod(o.receivedAt, period)), [orders, period]);
 
