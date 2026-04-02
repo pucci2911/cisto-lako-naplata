@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { format, subDays, startOfMonth, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 
 type Period = 'danas' | '7dana' | 'mesec';
 
@@ -143,11 +143,20 @@ export default function ReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-title">Izveštaji</h1>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" disabled={exporting} onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-1.5" />
-            {exporting ? 'Izvoz...' : 'Izvezi CSV'}
-          </Button>
-          <div className="flex gap-1 bg-muted rounded-lg p-1">
+          <div className="flex gap-2 no-print">
+            <Button variant="outline" size="sm" disabled={exporting} onClick={handleExportCSV}>
+              <Download className="h-4 w-4 mr-1.5" />
+              {exporting ? 'Izvoz...' : 'Izvezi CSV'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="h-4 w-4 mr-1.5" />
+              Štampaj
+            </Button>
+          </div>
+          <p className="hidden print:block text-sm text-muted-foreground">
+            Period: {PERIOD_OPTIONS.find(o => o.value === period)?.label}
+          </p>
+          <div className="flex gap-1 bg-muted rounded-lg p-1 no-print">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.value}
