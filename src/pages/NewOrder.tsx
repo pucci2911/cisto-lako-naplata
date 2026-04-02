@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from '@/components/ui/command';
 import ClaimTicket from '@/components/ClaimTicket';
-import { Trash2, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Plus, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Customer, PaymentMethod, PaymentStatus, OrderItem } from '@/types';
 
@@ -235,16 +237,31 @@ export default function NewOrder() {
         <h2 className="text-lg font-semibold mb-4">2. Artikli</h2>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <Select onValueChange={handleAddFromPriceList}>
-            <SelectTrigger className="w-64 h-11">
-              <SelectValue placeholder="Dodaj artikal iz cenovnika" />
-            </SelectTrigger>
-            <SelectContent>
-              {activePriceList.map(p => (
-                <SelectItem key={p.id} value={p.id}>{p.itemName} — {formatPrice(p.basePrice)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" role="combobox" className="w-64 h-11 justify-between font-normal">
+                Dodaj artikal iz cenovnika
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Pretraži po nazivu ili kategoriji..." />
+                <CommandList>
+                  <CommandEmpty>Nema stavki za zadati pojam.</CommandEmpty>
+                  {activePriceList.map(p => (
+                    <CommandItem
+                      key={p.id}
+                      value={`${p.itemName} ${p.category}`}
+                      onSelect={() => handleAddFromPriceList(p.id)}
+                    >
+                      {p.itemName} — {formatPrice(p.basePrice)}
+                    </CommandItem>
+                  ))}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <Button variant="outline" onClick={() => setShowManualForm(!showManualForm)} className="h-11">
             Dodaj artikal ručno
           </Button>
