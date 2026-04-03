@@ -94,7 +94,7 @@ export default function SettingsPage() {
         <div><Label className="text-sm">Adresa</Label><Input value={settings.address} onChange={e => update('address', e.target.value)} className="h-11" />{fieldError('address')}</div>
         <div><Label className="text-sm">Telefon</Label><Input value={settings.phone} onChange={e => update('phone', e.target.value)} className="h-11" />{fieldError('phone')}</div>
         <div><Label className="text-sm">Email radnje</Label><Input value={settings.email} onChange={e => update('email', e.target.value)} className="h-11" />{fieldError('email')}</div>
-        <div><Label className="text-sm">Podrazumevani broj dana za gotovost</Label><Input type="number" min={1} value={settings.defaultTurnaroundDays} onChange={e => update('defaultTurnaroundDays', Number(e.target.value))} className="h-11 w-32" />{fieldError('defaultTurnaroundDays')}</div>
+        <div><Label className="text-sm">Podrazumevani broj dana za gotovost</Label><Input type="number" value={settings.defaultTurnaroundDays} onChange={e => update('defaultTurnaroundDays', Number(e.target.value))} className="h-11 w-32" />{fieldError('defaultTurnaroundDays')}</div>
         <div><Label className="text-sm">Tekst na dnu računa</Label><Textarea value={settings.receiptFooterText} onChange={e => update('receiptFooterText', e.target.value)} rows={2} /></div>
         <div className="flex items-center gap-3">
           <Button onClick={handleSave} disabled={saving} className="h-11">{saving ? 'Čuvanje...' : 'Sačuvaj podešavanja'}</Button>

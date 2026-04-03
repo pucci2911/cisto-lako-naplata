@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/store/auth";
 import { seedIfNeeded } from "@/store/data";
 import Layout from "@/components/Layout";
+import CookieBanner from "@/components/CookieBanner";
 import Login from "@/pages/Login";
 import LandingPage from "@/pages/LandingPage";
 import Dashboard from "@/pages/Dashboard";
@@ -38,6 +39,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CookieBanner />
       <BrowserRouter>
         <AuthProvider>
           <Routes>
