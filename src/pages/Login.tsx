@@ -4,21 +4,29 @@ import { useAuth } from '@/store/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (login(email, password)) {
-      navigate('/kontrolna-tabla');
-    } else {
-      setError('Pogrešan email ili lozinka.');
+    setLoading(true);
+    try {
+      if (login(email, password)) {
+        navigate('/kontrolna-tabla');
+      } else {
+        setError('Pogrešan email ili lozinka.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,11 +45,23 @@ export default function Login() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">Lozinka</Label>
-            <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••" className="h-12 text-base" required />
+            <div className="relative">
+              <Input id="password" type={showPassword ? 'text' : 'password'} value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••" className="h-12 text-base pr-11" required />
+              <button type="button" tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowPassword(v => !v)}
+                aria-label={showPassword ? 'Sakrij lozinku' : 'Prikaži lozinku'}>
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">Za resetovanje lozinke kontaktirajte administratora.</p>
           </div>
           {error && <p className="text-destructive text-sm">{error}</p>}
-          <Button type="submit" className="w-full h-12 text-base font-semibold">Prijavite se</Button>
+          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={loading}>
+            {loading ? 'Prijavljivanje...' : 'Prijavite se'}
+          </Button>
           <p className="text-xs text-muted-foreground text-center mt-4">Demo: demo@cisto.rs / demo1234</p>
         </form>
       </div>
