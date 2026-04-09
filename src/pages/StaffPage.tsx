@@ -126,7 +126,7 @@ export default function StaffPage() {
             {profiles.map(p => (
               <tr key={p.id} className="border-b last:border-0">
                 <td className="px-4 py-3 font-medium">{p.name}</td>
-                <td className="px-4 py-3">{/* email not stored in profiles — show user_id hint */}—</td>
+                <td className="px-4 py-3">{p.email || '—'}</td>
                 <td className="px-4 py-3">{p.role === 'owner' ? 'Vlasnik' : 'Zaposleni'}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${p.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
