@@ -20,10 +20,11 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      if (login(email, password)) {
-        navigate('/kontrolna-tabla');
+      const err = await login(email, password);
+      if (err) {
+        setError(err);
       } else {
-        setError('Pogrešan email ili lozinka.');
+        navigate('/kontrolna-tabla');
       }
     } finally {
       setLoading(false);
@@ -41,7 +42,7 @@ export default function Login() {
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">Email</Label>
             <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="demo@cisto.rs" className="h-12 text-base" required />
+              placeholder="vas@email.com" className="h-12 text-base" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">Lozinka</Label>
@@ -62,7 +63,6 @@ export default function Login() {
           <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={loading}>
             {loading ? 'Prijavljivanje...' : 'Prijavite se'}
           </Button>
-          <p className="text-xs text-muted-foreground text-center mt-4">Demo: demo@cisto.rs / demo1234</p>
         </form>
       </div>
     </div>

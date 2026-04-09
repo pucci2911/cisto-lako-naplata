@@ -16,11 +16,11 @@ const navItems = [
 ];
 
 export default function Layout({ children }: LayoutProps) {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = async () => { await logout(); navigate('/'); };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container flex items-center justify-between h-16">
           <Link to="/kontrolna-tabla" className="text-title font-bold text-primary tracking-tight">Čisto</Link>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground hidden sm:inline">{user?.name}</span>
+            <span className="text-sm text-muted-foreground hidden sm:inline">{profile?.name}</span>
             <button onClick={handleLogout} className="p-2 rounded-md hover:bg-muted text-muted-foreground" title="Odjavi se">
               <LogOut size={20} />
             </button>
@@ -40,7 +40,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="w-56 bg-card border-r hidden md:block no-print shrink-0">
           <div className="p-4 space-y-1">
             {navItems.map(item => {
-              if ((item as any).ownerOnly && user?.role === 'employee') return null;
+              if ((item as any).ownerOnly && profile?.role === 'employee') return null;
               const active = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
               return (
                 <Link key={item.to} to={item.to}
@@ -50,7 +50,7 @@ export default function Layout({ children }: LayoutProps) {
                 </Link>
               );
             })}
-            {user?.role === 'owner' && (
+            {profile?.role === 'owner' && (
               <Link to="/podesavanja"
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${location.pathname === '/podesavanja' ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'}`}>
                 <Settings size={18} />
@@ -64,7 +64,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="fixed bottom-0 left-0 right-0 bg-card border-t md:hidden z-30 no-print">
           <div className="flex justify-around py-2">
             {navItems.slice(0, 4).map(item => {
-              if ((item as any).ownerOnly && user?.role === 'employee') return null;
+              if ((item as any).ownerOnly && profile?.role === 'employee') return null;
               const active = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
               return (
                 <Link key={item.to} to={item.to} className={`flex flex-col items-center gap-0.5 px-2 py-1 text-xs ${active ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>

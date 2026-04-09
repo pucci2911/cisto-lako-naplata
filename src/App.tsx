@@ -28,9 +28,10 @@ seedIfNeeded();
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children, ownerOnly = false }: { children: React.ReactNode; ownerOnly?: boolean }) {
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-muted-foreground">Učitavanje...</p></div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (ownerOnly && user.role !== 'owner') return <Navigate to="/kontrolna-tabla" replace />;
+  if (ownerOnly && profile?.role !== 'owner') return <Navigate to="/kontrolna-tabla" replace />;
   return <Layout>{children}</Layout>;
 }
 
