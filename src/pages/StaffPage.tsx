@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { getUsers, saveUser, updateUser } from '@/store/data';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth, type Profile } from '@/store/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import type { AppUser } from '@/types';
 
 export default function StaffPage() {
-  const [users, setUsers] = useState<AppUser[]>(getUsers());
+  const { user } = useAuth();
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,36 +17,70 @@ export default function StaffPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const refresh = () => setUsers(getUsers());
+  const fetchProfiles = async () => {
+    const { data } = await supabase.from('profiles').select('*').order('created_at');
+    if (data) setProfiles(data as Profile[]);
+    setLoading(false);
+  };
 
-  const handleAdd = () => {
+  useEffect(() => { fetchProfiles(); }, []);
+
+  const handleAdd = async () => {
     if (!name.trim() || !email.trim() || !password.trim()) {
       setError('Sva polja su obavezna.');
       return;
     }
-    if (users.find(u => u.email === email.trim())) {
-      setError('Korisnik sa tim emailom već postoji.');
+    if (password.trim().length < 6) {
+      setError('Lozinka mora imati najmanje 6 karaktera.');
       return;
     }
     if (saving) return;
     setSaving(true);
+    setError('');
+
     try {
-      saveUser({ name: name.trim(), email: email.trim(), role: 'employee', active: true, password: password.trim() });
+      const { data, error: fnError } = await supabase.functions.invoke('create-staff', {
+        body: { email: email.trim(), password: password.trim(), name: name.trim() },
+      });
+
+      if (fnError || data?.error) {
+        setError(data?.error || fnError?.message || 'Greška pri dodavanju.');
+        return;
+      }
+
       toast.success('Zaposleni je uspešno dodat.');
-      setName(''); setEmail(''); setPassword(''); setShowAdd(false); setError('');
-      refresh();
+      setName(''); setEmail(''); setPassword(''); setShowAdd(false);
+      await fetchProfiles();
     } catch {
-      toast.error('Greška pri dodavanju zaposlenog. Pokušajte ponovo.');
+      toast.error('Greška pri dodavanju zaposlenog.');
     } finally {
       setSaving(false);
     }
   };
 
-  const toggleActive = (user: AppUser) => {
-    if (user.email === 'demo@cisto.rs') return;
-    updateUser(user.id, { active: !user.active });
-    refresh();
+  const toggleActive = async (profile: Profile) => {
+    // Don't allow deactivating yourself
+    if (profile.user_id === user?.id) return;
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('toggle-staff-active', {
+        body: { profileId: profile.id, active: !profile.active },
+      });
+
+      if (fnError || data?.error) {
+        toast.error(data?.error || 'Greška pri promeni statusa.');
+        return;
+      }
+
+      await fetchProfiles();
+    } catch {
+      toast.error('Greška pri promeni statusa.');
+    }
   };
+
+  if (loading) {
+    return <div className="max-w-2xl mx-auto"><p className="text-muted-foreground py-12 text-center">Učitavanje...</p></div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -81,26 +117,26 @@ export default function StaffPage() {
             </tr>
           </thead>
           <tbody>
-            {users.length === 0 && (
+            {profiles.length === 0 && (
               <tr><td colSpan={5} className="px-4 py-12 text-center">
                 <p className="text-muted-foreground font-medium">Nema zaposlenih.</p>
                 <p className="text-sm text-muted-foreground/70 mt-1">Dodajte prvog zaposlenog klikom na dugme iznad.</p>
               </td></tr>
             )}
-            {users.map(user => (
-              <tr key={user.id} className="border-b last:border-0">
-                <td className="px-4 py-3 font-medium">{user.name}</td>
-                <td className="px-4 py-3">{user.email}</td>
-                <td className="px-4 py-3">{user.role === 'owner' ? 'Vlasnik' : 'Zaposleni'}</td>
+            {profiles.map(p => (
+              <tr key={p.id} className="border-b last:border-0">
+                <td className="px-4 py-3 font-medium">{p.name}</td>
+                <td className="px-4 py-3">{/* email not stored in profiles — show user_id hint */}—</td>
+                <td className="px-4 py-3">{p.role === 'owner' ? 'Vlasnik' : 'Zaposleni'}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
-                    {user.active ? 'Aktivan' : 'Neaktivan'}
+                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${p.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
+                    {p.active ? 'Aktivan' : 'Neaktivan'}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {user.email !== 'demo@cisto.rs' && (
-                    <Button variant="outline" size="sm" onClick={() => toggleActive(user)}>
-                      {user.active ? 'Deaktiviraj' : 'Aktiviraj'}
+                  {p.user_id !== user?.id && (
+                    <Button variant="outline" size="sm" onClick={() => toggleActive(p)}>
+                      {p.active ? 'Deaktiviraj' : 'Aktiviraj'}
                     </Button>
                   )}
                 </td>
