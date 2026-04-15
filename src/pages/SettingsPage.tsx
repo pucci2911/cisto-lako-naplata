@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getSettings, saveSettings } from '@/store/data';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 import type { ShopSettings, DashboardDisplayMode } from '@/types';
 
 const DISPLAY_OPTIONS: { value: DashboardDisplayMode; label: string; description: string }[] = [
