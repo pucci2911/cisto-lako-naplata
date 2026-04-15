@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getSettings, saveSettings } from '@/store/data';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 import type { ShopSettings, DashboardDisplayMode } from '@/types';
 
 const DISPLAY_OPTIONS: { value: DashboardDisplayMode; label: string; description: string }[] = [
@@ -40,6 +42,116 @@ function validate(s: ShopSettings): FieldErrors {
     errors.defaultTurnaroundDays = 'Broj dana mora biti najmanje 1';
   }
   return errors;
+}
+
+function ChangePasswordSection() {
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [pwErrors, setPwErrors] = useState<Record<string, string>>({});
+
+  const handleChangePassword = async () => {
+    const errs: Record<string, string> = {};
+    if (!currentPw) errs.currentPw = 'Unesite trenutnu lozinku';
+    if (!newPw) {
+      errs.newPw = 'Unesite novu lozinku';
+    } else if (newPw.length < 6) {
+      errs.newPw = 'Lozinka mora imati najmanje 6 karaktera';
+    }
+    if (!confirmPw) {
+      errs.confirmPw = 'Potvrdite novu lozinku';
+    } else if (newPw && newPw !== confirmPw) {
+      errs.confirmPw = 'Lozinke se ne poklapaju';
+    }
+    if (Object.keys(errs).length > 0) {
+      setPwErrors(errs);
+      return;
+    }
+    setPwErrors({});
+    setSaving(true);
+    try {
+      // Verify current password by re-authenticating
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) throw new Error('No user');
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPw,
+      });
+      if (signInErr) {
+        setPwErrors({ currentPw: 'Trenutna lozinka nije ispravna' });
+        setSaving(false);
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPw });
+      if (error) throw error;
+      toast.success('Lozinka je uspešno promenjena.');
+      setCurrentPw('');
+      setNewPw('');
+      setConfirmPw('');
+    } catch {
+      toast.error('Greška pri promeni lozinke.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const pwFieldError = (key: string) =>
+    pwErrors[key] ? <p className="text-sm text-destructive mt-1">{pwErrors[key]}</p> : null;
+
+  return (
+    <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mt-6">
+      <h2 className="text-lg font-semibold mb-1">Promena lozinke</h2>
+      <p className="text-sm text-muted-foreground mb-4">Promenite lozinku za svoj nalog.</p>
+      <div className="space-y-4 max-w-sm">
+        <div>
+          <Label className="text-sm">Trenutna lozinka</Label>
+          <div className="relative">
+            <Input
+              type={showCurrent ? 'text' : 'password'}
+              value={currentPw}
+              onChange={e => { setCurrentPw(e.target.value); if (pwErrors.currentPw) setPwErrors(p => { const n = { ...p }; delete n.currentPw; return n; }); }}
+              className="h-11 pr-10"
+            />
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          {pwFieldError('currentPw')}
+        </div>
+        <div>
+          <Label className="text-sm">Nova lozinka</Label>
+          <div className="relative">
+            <Input
+              type={showNew ? 'text' : 'password'}
+              value={newPw}
+              onChange={e => { setNewPw(e.target.value); if (pwErrors.newPw) setPwErrors(p => { const n = { ...p }; delete n.newPw; return n; }); }}
+              className="h-11 pr-10"
+            />
+            <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          {pwFieldError('newPw')}
+        </div>
+        <div>
+          <Label className="text-sm">Potvrdite novu lozinku</Label>
+          <Input
+            type={showNew ? 'text' : 'password'}
+            value={confirmPw}
+            onChange={e => { setConfirmPw(e.target.value); if (pwErrors.confirmPw) setPwErrors(p => { const n = { ...p }; delete n.confirmPw; return n; }); }}
+            className="h-11"
+          />
+          {pwFieldError('confirmPw')}
+        </div>
+        <Button onClick={handleChangePassword} disabled={saving} className="h-11">
+          {saving ? 'Čuvanje...' : 'Promeni lozinku'}
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export default function SettingsPage() {
@@ -133,6 +245,8 @@ export default function SettingsPage() {
           Upravljaj zaposlenima
         </Link>
       </div>
+
+      <ChangePasswordSection />
     </div>
   );
 }
