@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOrder, getCustomer, getOrderItems, updateOrder, updateOrderItem, getSettings } from '@/store/data';
-import { formatDate, formatDateTime, formatPrice, statusColor, paymentStatusColor } from '@/lib/format';
+import { getOrder, getCustomer, getOrderItems, updateOrder, getSettings } from '@/store/data';
+import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
 import { addAuditEntry, getAuditEntries } from '@/store/audit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ClaimTicket from '@/components/ClaimTicket';
-import type { OrderStatus, PaymentStatus } from '@/types';
+import type { Order, OrderStatus } from '@/types';
 import { Printer, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
 
 export default function OrderDetail() {
@@ -17,9 +17,15 @@ export default function OrderDetail() {
   const navigate = useNavigate();
   const [showPrint, setShowPrint] = useState(false);
   const [notification, setNotification] = useState('');
-  const [, forceRender] = useState(0);
 
-  const order = getOrder(id!);
+  const [order, setOrder] = useState<Order | undefined>(() => getOrder(id!));
+  const [auditVersion, setAuditVersion] = useState(0);
+
+  const refreshOrder = useCallback(() => {
+    setOrder(getOrder(id!));
+    setAuditVersion(v => v + 1);
+  }, [id]);
+
   if (!order) return <div className="py-12 text-center text-muted-foreground">Porudžbina nije pronađena.</div>;
 
   const customer = getCustomer(order.customerId);
@@ -28,7 +34,7 @@ export default function OrderDetail() {
   const amountDue = order.totalPrice - order.amountPaid;
 
   const handleStatusChange = (newStatus: OrderStatus) => {
-    const updates: Partial<typeof order> = { status: newStatus };
+    const updates: Partial<Order> = { status: newStatus };
     if (newStatus === 'Preuzeto') {
       updates.pickedUpAt = new Date().toISOString();
       addAuditEntry(order.id, `Porudžbina preuzeta`);
@@ -42,15 +48,15 @@ export default function OrderDetail() {
     }
     addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
     updateOrder(order.id, updates);
-    forceRender(n => n + 1);
+    refreshOrder();
   };
 
-  const handleFieldUpdate = (field: string, value: any) => {
+  const handleFieldUpdate = (field: string, value: string | number) => {
     if (field === 'paymentStatus') {
       addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
     }
     updateOrder(order.id, { [field]: value });
-    forceRender(n => n + 1);
+    refreshOrder();
   };
 
   if (showPrint) {
