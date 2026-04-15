@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { getPriceList, savePriceListItem, updatePriceListItem } from '@/store/data';
 import { formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import type { PriceListItem } from '@/types';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function PriceList() {
-  const [, forceRender] = useState(0);
+  const [items, setItems] = useState<PriceListItem[]>(() => getPriceList());
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -22,7 +23,9 @@ export default function PriceList() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const items = getPriceList();
+  const refreshItems = useCallback(() => {
+    setItems(getPriceList());
+  }, []);
 
   const sorted = useMemo(() =>
     [...items].sort((a, b) => {
@@ -72,7 +75,7 @@ export default function PriceList() {
       toast.success('Stavka uspešno dodata.');
       setName(''); setCategory(''); setPrice(''); setErrors({});
       setShowAdd(false);
-      forceRender(n => n + 1);
+      refreshItems();
     } catch {
       toast.error('Nije moguće sačuvati stavku. Pokušajte ponovo.');
     } finally {
@@ -82,7 +85,7 @@ export default function PriceList() {
 
   const handleToggle = (id: string, active: boolean) => {
     updatePriceListItem(id, { active });
-    forceRender(n => n + 1);
+    refreshItems();
   };
 
   const handleEditSave = (id: string) => {
@@ -90,7 +93,7 @@ export default function PriceList() {
     updatePriceListItem(id, { itemName: name.trim(), category: category.trim(), basePrice: Number(price) });
     toast.success('Stavka ažurirana.');
     setEditId(null);
-    forceRender(n => n + 1);
+    refreshItems();
   };
 
   const startEdit = (id: string) => {
