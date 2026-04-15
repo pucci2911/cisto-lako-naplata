@@ -135,6 +135,8 @@ export default function SettingsPage() {
           Upravljaj zaposlenima
         </Link>
       </div>
+
+      <ChangePasswordSection />
     </div>
   );
 }
