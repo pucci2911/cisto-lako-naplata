@@ -14,6 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string
+          preferred_notification_channel: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone: string
+          preferred_notification_channel?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string
+          preferred_notification_channel?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          category: string
+          damage_notes: string | null
+          id: string
+          item_name: string
+          item_status: string
+          note: string | null
+          order_id: string
+          quantity: number
+          special_instructions: string | null
+          stain_notes: string | null
+          unit_price: number
+          upcharge_amount: number | null
+        }
+        Insert: {
+          category: string
+          damage_notes?: string | null
+          id?: string
+          item_name: string
+          item_status?: string
+          note?: string | null
+          order_id: string
+          quantity?: number
+          special_instructions?: string | null
+          stain_notes?: string | null
+          unit_price?: number
+          upcharge_amount?: number | null
+        }
+        Update: {
+          category?: string
+          damage_notes?: string | null
+          id?: string
+          item_name?: string
+          item_status?: string
+          note?: string | null
+          order_id?: string
+          quantity?: number
+          special_instructions?: string | null
+          stain_notes?: string | null
+          unit_price?: number
+          upcharge_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          amount_paid: number
+          customer_id: string
+          customer_note: string | null
+          due_date: string
+          id: string
+          internal_notes: string | null
+          order_number: string
+          payment_method: string
+          payment_status: string
+          picked_up_at: string | null
+          rack_location: string | null
+          ready_notification_sent_at: string | null
+          received_at: string
+          status: string
+          total_price: number
+        }
+        Insert: {
+          amount_paid?: number
+          customer_id: string
+          customer_note?: string | null
+          due_date: string
+          id?: string
+          internal_notes?: string | null
+          order_number: string
+          payment_method: string
+          payment_status: string
+          picked_up_at?: string | null
+          rack_location?: string | null
+          ready_notification_sent_at?: string | null
+          received_at?: string
+          status: string
+          total_price?: number
+        }
+        Update: {
+          amount_paid?: number
+          customer_id?: string
+          customer_note?: string | null
+          due_date?: string
+          id?: string
+          internal_notes?: string | null
+          order_number?: string
+          payment_method?: string
+          payment_status?: string
+          picked_up_at?: string | null
+          rack_location?: string | null
+          ready_notification_sent_at?: string | null
+          received_at?: string
+          status?: string
+          total_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active: boolean
