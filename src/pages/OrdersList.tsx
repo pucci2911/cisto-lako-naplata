@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOrders, getCustomer } from '@/store/data';
-import { formatDate, formatPrice, statusColor, paymentStatusColor } from '@/lib/format';
+import { formatDate, formatPrice, statusColor, paymentStatusColor, formatPaymentStatus } from '@/lib/format';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { OrderStatus } from '@/types';
@@ -95,7 +95,7 @@ export default function OrdersList() {
                     <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
                     <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
                     <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
-                    <td className="px-4 py-3 hidden md:table-cell"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{order.paymentStatus}</span></td>
+                    <td className="px-4 py-3 hidden md:table-cell"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{formatPaymentStatus(order.paymentStatus)}</span></td>
                   </tr>
                 );
               })}

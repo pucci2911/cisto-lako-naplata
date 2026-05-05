@@ -34,6 +34,7 @@ export default function OrderDetail() {
   const amountDue = order.totalPrice - order.amountPaid;
 
   const handleStatusChange = (newStatus: OrderStatus) => {
+    setNotification('');
     const updates: Partial<Order> = { status: newStatus };
     if (newStatus === 'Preuzeto') {
       updates.pickedUpAt = new Date().toISOString();
