@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getOrders, getCustomer } from '@/store/data';
-import { formatDate, formatPrice, statusColor, paymentStatusColor, isToday } from '@/lib/format';
+import { formatDate, formatPrice, statusColor, paymentStatusColor, formatPaymentStatus, isToday } from '@/lib/format';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DashboardStats from '@/components/DashboardStats';
@@ -70,7 +70,7 @@ export default function Dashboard() {
                   <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
                   <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
                   <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
-                  <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{order.paymentStatus}</span></td>
+                  <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{formatPaymentStatus(order.paymentStatus)}</span></td>
                 </tr>
               );
             })}
@@ -94,7 +94,7 @@ export default function Dashboard() {
 
       <DashboardStats cards={cards} dailyData={dailyData} />
 
-      <h2 className="text-lg font-semibold mb-3">Današnje porudžbine</h2>
+      <h2 className="text-lg font-semibold mb-3">Aktivne porudžbine</h2>
       {renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
 
       {overdueOrders.length > 0 && (

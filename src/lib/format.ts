@@ -31,6 +31,14 @@ export function statusColor(status: OrderStatus): string {
   }
 }
 
+export function formatPaymentStatus(status: PaymentStatus): string {
+  switch (status) {
+    case 'Placeno': return 'Plaćeno';
+    case 'Delimicno placeno': return 'Delimično plaćeno';
+    case 'Nije placeno': return 'Nije plaćeno';
+  }
+}
+
 export function paymentStatusColor(status: PaymentStatus): string {
   switch (status) {
     case 'Placeno': return 'bg-green-100 text-green-800';
