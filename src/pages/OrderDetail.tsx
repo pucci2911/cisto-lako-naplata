@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOrder, getCustomer, getOrderItems, updateOrder, getSettings } from '@/store/data';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queries, queryKeys } from '@/lib/queries';
+import { updateOrder, getSettings } from '@/store/data';
 import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
 import { addAuditEntry, getAuditEntries } from '@/store/audit';
 import { Button } from '@/components/ui/button';
@@ -15,22 +17,28 @@ import { Printer, ArrowLeft, Mail, AlertTriangle } from 'lucide-react';
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [showPrint, setShowPrint] = useState(false);
   const [notification, setNotification] = useState('');
-
-  const [order, setOrder] = useState<Order | undefined>(() => getOrder(id!));
   const [auditVersion, setAuditVersion] = useState(0);
 
-  const refreshOrder = useCallback(() => {
-    setOrder(getOrder(id!));
-    setAuditVersion(v => v + 1);
-  }, [id]);
+  const { data: order, isLoading } = useQuery(queries.order(id));
+  const { data: customer } = useQuery(queries.customer(order?.customerId));
+  const { data: items = [] } = useQuery(queries.orderItems(order?.id));
+  const settings = getSettings();
 
+  const updateMutation = useMutation({
+    mutationFn: (updates: Partial<Order>) => updateOrder(id!, updates),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.order(id!) });
+      qc.invalidateQueries({ queryKey: queryKeys.orders });
+      setAuditVersion(v => v + 1);
+    },
+  });
+
+  if (isLoading) return <div className="py-12 text-center text-muted-foreground">Učitavanje...</div>;
   if (!order) return <div className="py-12 text-center text-muted-foreground">Porudžbina nije pronađena.</div>;
 
-  const customer = getCustomer(order.customerId);
-  const items = getOrderItems(order.id);
-  const settings = getSettings();
   const amountDue = order.totalPrice - order.amountPaid;
 
   const handleStatusChange = (newStatus: OrderStatus) => {
@@ -48,16 +56,14 @@ export default function OrderDetail() {
       setNotification('Kupac nema email adresu. Obavestite ga telefonom.');
     }
     addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
-    updateOrder(order.id, updates);
-    refreshOrder();
+    updateMutation.mutate(updates);
   };
 
-  const handleFieldUpdate = (field: string, value: string | number) => {
+  const handleFieldUpdate = (field: keyof Order, value: string | number) => {
     if (field === 'paymentStatus') {
       addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
     }
-    updateOrder(order.id, { [field]: value });
-    refreshOrder();
+    updateMutation.mutate({ [field]: value } as Partial<Order>);
   };
 
   if (showPrint) {
@@ -96,15 +102,12 @@ export default function OrderDetail() {
         </div>
       )}
 
-      {/* Status & Key Info */}
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label className="text-sm">Status</Label>
             <Select value={order.status} onValueChange={v => handleStatusChange(v as OrderStatus)}>
-              <SelectTrigger className="h-12 text-base">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="h-12 text-base"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {(['Primljeno', 'U obradi', 'Spremno', 'Preuzeto', 'Otkazano'] as OrderStatus[]).map(s => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -134,7 +137,6 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* Customer */}
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Kupac</h2>
         <p className="font-medium text-base">{customer?.fullName}</p>
@@ -142,7 +144,6 @@ export default function OrderDetail() {
         {customer?.email && <p className="text-muted-foreground">{customer.email}</p>}
       </div>
 
-      {/* Items */}
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Artikli</h2>
         <div className="space-y-2">
@@ -175,7 +176,6 @@ export default function OrderDetail() {
         <div className="text-right text-lg font-bold pt-3">Ukupno: {formatPrice(order.totalPrice)}</div>
       </div>
 
-      {/* Payment */}
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Plaćanje</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -206,7 +206,6 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* Notes */}
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Napomene</h2>
         <div className="space-y-3">
@@ -221,10 +220,10 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* Audit Trail */}
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Istorija promena</h2>
         {(() => {
+          void auditVersion;
           const entries = getAuditEntries(order.id);
           if (entries.length === 0) return <p className="text-sm text-muted-foreground">Nema zabeleženih promena.</p>;
           return (

@@ -1,19 +1,25 @@
-import { useCallback, useState } from 'react';
-import { getCustomers, saveCustomer } from '@/store/data';
+import { useCallback, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { saveCustomer } from '@/store/data';
+import { queries, queryKeys } from '@/lib/queries';
 import type { Customer } from '@/types';
 
 export function useCustomers() {
-  const [customers, setCustomers] = useState<Customer[]>(() => getCustomers());
+  const qc = useQueryClient();
+  const { data, isLoading, error, refetch } = useQuery(queries.customers());
+  const customers = useMemo(() => data ?? [], [data]);
 
-  const refresh = useCallback(() => {
-    setCustomers(getCustomers());
-  }, []);
+  const createMutation = useMutation({
+    mutationFn: (input: Omit<Customer, 'id' | 'createdAt'>) => saveCustomer(input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.customers });
+    },
+  });
 
-  const create = useCallback((data: Omit<Customer, 'id' | 'createdAt'>) => {
-    const c = saveCustomer(data);
-    setCustomers(prev => [...prev, c]);
-    return c;
-  }, []);
+  const create = useCallback(
+    (input: Omit<Customer, 'id' | 'createdAt'>) => createMutation.mutateAsync(input),
+    [createMutation]
+  );
 
   const search = useCallback(
     (query: string): Customer[] => {
@@ -26,5 +32,5 @@ export function useCustomers() {
     [customers]
   );
 
-  return { customers, refresh, create, search };
+  return { customers, isLoading, error, refresh: refetch, create, search };
 }

@@ -1,21 +1,26 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCustomers, getOrders } from '@/store/data';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/lib/queries';
 import { Input } from '@/components/ui/input';
 
 export default function CustomersList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const customers = getCustomers();
-  const orders = getOrders();
+  const { data: customers = [], isLoading } = useQuery(queries.customers());
+  const { data: orders = [] } = useQuery(queries.orders());
+
+  const orderCountById = useMemo(() => {
+    const m = new Map<string, number>();
+    orders.forEach(o => m.set(o.customerId, (m.get(o.customerId) ?? 0) + 1));
+    return m;
+  }, [orders]);
 
   const filtered = customers.filter(c => {
     if (!search) return true;
     const q = search.toLowerCase();
     return c.fullName.toLowerCase().includes(q) || c.phone.includes(q);
   });
-
-  const orderCount = (customerId: string) => orders.filter(o => o.customerId === customerId).length;
 
   return (
     <div>
@@ -41,10 +46,13 @@ export default function CustomersList() {
                   <td className="px-4 py-3 font-medium">{c.fullName}</td>
                   <td className="px-4 py-3">{c.phone}</td>
                   <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{c.email || '—'}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{orderCount(c.id)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{orderCountById.get(c.id) ?? 0}</td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {isLoading && (
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Učitavanje...</td></tr>
+              )}
+              {!isLoading && filtered.length === 0 && (
                 <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Nema kupaca.</td></tr>
               )}
             </tbody>

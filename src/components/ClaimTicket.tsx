@@ -1,5 +1,7 @@
 import React from 'react';
-import { getOrder, getCustomer, getOrderItems, getSettings } from '@/store/data';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/lib/queries';
+import { getSettings } from '@/store/data';
 import { formatDate, formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
@@ -9,11 +11,13 @@ interface Props {
 }
 
 export default function ClaimTicket({ orderId }: Props) {
-  const order = getOrder(orderId);
+  const { data: order, isLoading } = useQuery(queries.order(orderId));
+  const { data: customer } = useQuery(queries.customer(order?.customerId));
+  const { data: items = [] } = useQuery(queries.orderItems(order?.id));
   const settings = getSettings();
+
+  if (isLoading) return <div className="py-12 text-center text-muted-foreground">Učitavanje...</div>;
   if (!order) return null;
-  const customer = getCustomer(order.customerId);
-  const items = getOrderItems(order.id);
   const amountDue = order.totalPrice - order.amountPaid;
 
   return (

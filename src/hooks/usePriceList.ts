@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { getPriceList } from '@/store/data';
 import type { PriceListItem } from '@/types';
 
+// Price list intentionally remains in localStorage for now.
 export function usePriceList() {
   const [items, setItems] = useState<PriceListItem[]>(() => getPriceList());
 
