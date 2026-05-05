@@ -1,23 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCustomer, updateCustomer, getOrders } from '@/store/data';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queries, queryKeys } from '@/lib/queries';
+import { updateCustomer } from '@/store/data';
 import { formatDate, formatPrice, statusColor } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Pencil } from 'lucide-react';
+import type { Customer } from '@/types';
 
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [, forceRender] = useState(0);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
 
-  const customer = getCustomer(id!);
+  const { data: customer, isLoading } = useQuery(queries.customer(id));
+  const { data: allOrders = [] } = useQuery(queries.orders());
 
   useEffect(() => {
     if (customer) {
@@ -28,14 +32,30 @@ export default function CustomerDetail() {
     }
   }, [customer]);
 
+  const orders = useMemo(
+    () => customer ? allOrders.filter(o => o.customerId === customer.id) : [],
+    [allOrders, customer]
+  );
+
+  const updateMutation = useMutation({
+    mutationFn: (updates: Partial<Customer>) => updateCustomer(id!, updates),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.customer(id!) });
+      qc.invalidateQueries({ queryKey: queryKeys.customers });
+      setEditing(false);
+    },
+  });
+
+  if (isLoading) return <div className="py-12 text-center text-muted-foreground">Učitavanje...</div>;
   if (!customer) return <div className="py-12 text-center text-muted-foreground">Kupac nije pronađen.</div>;
 
-  const orders = getOrders().filter(o => o.customerId === customer.id).sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
-
   const handleSave = () => {
-    updateCustomer(customer.id, { fullName: name, phone, email: email || undefined, notes: notes || undefined });
-    setEditing(false);
-    forceRender(n => n + 1);
+    updateMutation.mutate({
+      fullName: name,
+      phone,
+      email: email || undefined,
+      notes: notes || undefined,
+    });
   };
 
   return (
@@ -55,7 +75,7 @@ export default function CustomerDetail() {
               <div><Label className="text-sm">Napomena</Label><Input value={notes} onChange={e => setNotes(e.target.value)} className="h-11" /></div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleSave}>Sačuvaj</Button>
+              <Button onClick={handleSave} disabled={updateMutation.isPending}>Sačuvaj</Button>
               <Button variant="outline" onClick={() => setEditing(false)}>Otkaži</Button>
             </div>
           </div>

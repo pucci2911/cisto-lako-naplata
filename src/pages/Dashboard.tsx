@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { getOrders, getCustomer } from '@/store/data';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/lib/queries';
 import { formatDate, formatPrice, statusColor, paymentStatusColor, formatPaymentStatus, isToday } from '@/lib/format';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,13 @@ import DashboardStats from '@/components/DashboardStats';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const orders = getOrders();
+  const { data: orders = [], isLoading } = useQuery(queries.orders());
+  const { data: customers = [] } = useQuery(queries.customers());
+  const customerById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    customers.forEach(c => m.set(c.id, c.fullName));
+    return m;
+  }, [customers]);
 
   const activeOrders = orders.filter(o => o.status === 'Primljeno' || o.status === 'U obradi');
   const todayDue = orders.filter(o => isToday(o.dueDate) && o.status !== 'Preuzeto' && o.status !== 'Otkazano');
@@ -17,10 +24,10 @@ export default function Dashboard() {
 
   const todayOrders = orders
     .filter(o => o.status !== 'Preuzeto' && o.status !== 'Otkazano')
+    .slice()
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 20);
 
-  // Overdue orders
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const overdueOrders = orders.filter(o => {
@@ -36,7 +43,6 @@ export default function Dashboard() {
     { label: 'Neplaćeno ili delimično', value: unpaid.length, color: 'border-l-destructive' },
   ];
 
-  // Daily data for last 7 days
   const dailyData = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -60,20 +66,17 @@ export default function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {orderList.map(order => {
-              const customer = getCustomer(order.customerId);
-              return (
-                <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
-                  className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${highlight ? 'bg-red-50' : ''}`}>
-                  <td className="px-4 py-3 font-mono font-semibold">{order.orderNumber}</td>
-                  <td className="px-4 py-3">{customer?.fullName || '—'}</td>
-                  <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
-                  <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
-                  <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{formatPaymentStatus(order.paymentStatus)}</span></td>
-                </tr>
-              );
-            })}
+            {orderList.map(order => (
+              <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
+                className={`border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors ${highlight ? 'bg-red-50' : ''}`}>
+                <td className="px-4 py-3 font-mono font-semibold">{order.orderNumber}</td>
+                <td className="px-4 py-3">{customerById.get(order.customerId) || '—'}</td>
+                <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
+                <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
+                <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
+                <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{formatPaymentStatus(order.paymentStatus)}</span></td>
+              </tr>
+            ))}
             {orderList.length === 0 && (
               <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{emptyMsg}</td></tr>
             )}
@@ -95,7 +98,9 @@ export default function Dashboard() {
       <DashboardStats cards={cards} dailyData={dailyData} />
 
       <h2 className="text-lg font-semibold mb-3">Aktivne porudžbine</h2>
-      {renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
+      {isLoading
+        ? <div className="bg-card rounded-xl px-4 py-12 text-center text-muted-foreground">Učitavanje...</div>
+        : renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
 
       {overdueOrders.length > 0 && (
         <div className="mt-8">

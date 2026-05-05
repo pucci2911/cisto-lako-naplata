@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOrders, getCustomer } from '@/store/data';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/lib/queries';
 import { formatDate, formatPrice, statusColor, paymentStatusColor, formatPaymentStatus } from '@/lib/format';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,13 +16,20 @@ export default function OrdersList() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const allOrders = getOrders();
+  const { data: allOrders = [], isLoading } = useQuery(queries.orders());
+  const { data: customers = [] } = useQuery(queries.customers());
+  const customerById = useMemo(() => {
+    const m = new Map<string, { fullName: string; phone: string }>();
+    customers.forEach(c => m.set(c.id, { fullName: c.fullName, phone: c.phone }));
+    return m;
+  }, [customers]);
+
   const orders = allOrders
     .filter(o => filter === 'Sve' || o.status === filter)
     .filter(o => {
       if (!search) return true;
       const q = search.toLowerCase();
-      const c = getCustomer(o.customerId);
+      const c = customerById.get(o.customerId);
       return o.orderNumber.toLowerCase().includes(q) ||
         c?.fullName.toLowerCase().includes(q) ||
         c?.phone.includes(q);
@@ -32,8 +40,7 @@ export default function OrdersList() {
       if (dateFrom && !dateTo) return due >= dateFrom;
       if (!dateFrom && dateTo) return due <= dateTo;
       return due >= dateFrom && due <= dateTo;
-    })
-    .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+    });
 
   const resetFilters = () => { setFilter('Sve'); setSearch(''); setDateFrom(''); setDateTo(''); };
 
@@ -85,13 +92,13 @@ export default function OrdersList() {
             </thead>
             <tbody>
               {orders.map(order => {
-                const customer = getCustomer(order.customerId);
+                const c = customerById.get(order.customerId);
                 return (
                   <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
                     className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors">
                     <td className="px-4 py-3 font-mono font-semibold">{order.orderNumber}</td>
-                    <td className="px-4 py-3">{customer?.fullName || '—'}</td>
-                    <td className="px-4 py-3 hidden sm:table-cell">{customer?.phone}</td>
+                    <td className="px-4 py-3">{c?.fullName || '—'}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">{c?.phone}</td>
                     <td className="px-4 py-3"><span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span></td>
                     <td className="px-4 py-3">{formatDate(order.dueDate)}</td>
                     <td className="px-4 py-3 text-right font-medium tabular-nums">{formatPrice(order.totalPrice)}</td>
@@ -99,13 +106,16 @@ export default function OrdersList() {
                   </tr>
                 );
               })}
-              {orders.length === 0 && allOrders.length === 0 && (
+              {isLoading && (
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">Učitavanje...</td></tr>
+              )}
+              {!isLoading && orders.length === 0 && allOrders.length === 0 && (
                 <tr><td colSpan={7} className="px-4 py-12 text-center">
                   <p className="text-muted-foreground font-medium">Još uvek nema porudžbina.</p>
                   <p className="text-sm text-muted-foreground/70 mt-1">Kreirajte prvu porudžbinu klikom na dugme iznad.</p>
                 </td></tr>
               )}
-              {orders.length === 0 && allOrders.length > 0 && (
+              {!isLoading && orders.length === 0 && allOrders.length > 0 && (
                 <tr><td colSpan={7} className="px-4 py-12 text-center">
                   <p className="text-muted-foreground font-medium">Nema porudžbina za zadate filtere.</p>
                   <button onClick={resetFilters} className="text-sm text-primary hover:underline mt-2 inline-block">Resetuj filtere</button>
