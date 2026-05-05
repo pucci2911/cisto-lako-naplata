@@ -95,23 +95,27 @@ export default function NewOrder() {
     dispatch({ type: 'RESET_MANUAL_FORM' });
   }, [state.manualName, state.manualCategory, state.manualQty, state.manualPrice]);
 
-  const handleCreateCustomer = useCallback(() => {
+  const handleCreateCustomer = useCallback(async () => {
     if (!state.newCustName || !state.newCustPhone) return;
-    const c = createCustomer({
-      fullName: state.newCustName,
-      phone: state.newCustPhone,
-      email: state.newCustEmail || undefined,
-      preferredNotificationChannel: state.newCustEmail ? 'email' : 'none',
-    });
-    dispatch({ type: 'SELECT_CUSTOMER', customer: c });
-    dispatch({ type: 'RESET_NEW_CUST_FORM' });
+    try {
+      const c = await createCustomer({
+        fullName: state.newCustName,
+        phone: state.newCustPhone,
+        email: state.newCustEmail || undefined,
+        preferredNotificationChannel: state.newCustEmail ? 'email' : 'none',
+      });
+      dispatch({ type: 'SELECT_CUSTOMER', customer: c });
+      dispatch({ type: 'RESET_NEW_CUST_FORM' });
+    } catch {
+      toast.error('Greška pri kreiranju kupca.');
+    }
   }, [state.newCustName, state.newCustPhone, state.newCustEmail, createCustomer]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!state.selectedCustomer || state.items.length === 0 || saving) return;
     setSaving(true);
     try {
-      const order = createOrder(
+      const order = await createOrder(
         {
           customerId: state.selectedCustomer.id,
           dueDate: state.dueDate,
