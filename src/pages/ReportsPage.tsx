@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOrders, getCustomer } from '@/store/data';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '@/lib/queries';
 import { isToday, formatPrice, formatDate } from '@/lib/format';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { format, subDays, startOfMonth, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfMonth, startOfDay, endOfDay } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Download, Printer } from 'lucide-react';
