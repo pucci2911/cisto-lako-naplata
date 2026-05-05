@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCustomer, updateCustomer, getOrders } from '@/store/data';
 import { formatDate, formatPrice, statusColor } from '@/lib/format';
@@ -12,16 +12,25 @@ export default function CustomerDetail() {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [, forceRender] = useState(0);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [notes, setNotes] = useState('');
 
   const customer = getCustomer(id!);
+
+  useEffect(() => {
+    if (customer) {
+      setName(customer.fullName);
+      setPhone(customer.phone);
+      setEmail(customer.email || '');
+      setNotes(customer.notes || '');
+    }
+  }, [customer]);
+
   if (!customer) return <div className="py-12 text-center text-muted-foreground">Kupac nije pronađen.</div>;
 
   const orders = getOrders().filter(o => o.customerId === customer.id).sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
-
-  const [name, setName] = useState(customer.fullName);
-  const [phone, setPhone] = useState(customer.phone);
-  const [email, setEmail] = useState(customer.email || '');
-  const [notes, setNotes] = useState(customer.notes || '');
 
   const handleSave = () => {
     updateCustomer(customer.id, { fullName: name, phone, email: email || undefined, notes: notes || undefined });
