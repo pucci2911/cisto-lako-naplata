@@ -1,55 +1,44 @@
 import { useCallback } from 'react';
-import { saveOrder, saveOrderItem, deleteOrderItem } from '@/store/data';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { saveOrder, saveOrderItem, deleteOrder } from '@/store/data';
+import { queryKeys } from '@/lib/queries';
 import type { Order, OrderItem } from '@/types';
 
-const ORDERS_KEY = 'cisto_orders';
-
-function rollbackOrder(orderId: string, savedItemIds: string[]) {
-  // Remove any items that were successfully saved before the failure
-  savedItemIds.forEach(id => {
-    try {
-      deleteOrderItem(id);
-    } catch {
-      // best-effort cleanup
-    }
-  });
-  // Remove the order itself directly from localStorage
-  try {
-    const raw = localStorage.getItem(ORDERS_KEY);
-    if (raw) {
-      const all: Order[] = JSON.parse(raw);
-      localStorage.setItem(ORDERS_KEY, JSON.stringify(all.filter(o => o.id !== orderId)));
-    }
-  } catch {
-    // best-effort cleanup
-  }
-}
-
 export function useOrders() {
-  const createOrder = useCallback(
-    (
-      orderData: Omit<Order, 'id' | 'orderNumber' | 'receivedAt'>,
-      items: Array<Omit<OrderItem, 'id' | 'orderId'>>
-    ): Order => {
-      let order: Order | null = null;
-      const savedItemIds: string[] = [];
+  const qc = useQueryClient();
 
+  const createMutation = useMutation({
+    mutationFn: async (args: {
+      orderData: Omit<Order, 'id' | 'orderNumber' | 'receivedAt'>;
+      items: Array<Omit<OrderItem, 'id' | 'orderId'>>;
+    }): Promise<Order> => {
+      let order: Order | null = null;
       try {
-        order = saveOrder(orderData);
-        items.forEach(item => {
-          const saved = saveOrderItem({ ...item, orderId: order!.id });
-          savedItemIds.push(saved.id);
-        });
+        order = await saveOrder(args.orderData);
+        for (const item of args.items) {
+          await saveOrderItem({ ...item, orderId: order.id });
+        }
         return order;
       } catch (err) {
         if (order) {
-          rollbackOrder(order.id, savedItemIds);
+          // Rollback: deleting the order cascades to its items.
+          try { await deleteOrder(order.id); } catch { /* best effort */ }
         }
         throw err;
       }
     },
-    []
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.orders });
+    },
+  });
+
+  const createOrder = useCallback(
+    (
+      orderData: Omit<Order, 'id' | 'orderNumber' | 'receivedAt'>,
+      items: Array<Omit<OrderItem, 'id' | 'orderId'>>
+    ) => createMutation.mutateAsync({ orderData, items }),
+    [createMutation]
   );
 
-  return { createOrder };
+  return { createOrder, creating: createMutation.isPending };
 }
