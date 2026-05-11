@@ -58,21 +58,34 @@ export function CustomerStep({ state, dispatch, matchingCustomers, onCreateCusto
           )}
           {showNewCustForm && (
             <div className="border rounded-lg p-4 mt-2 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Novi kupac. Popunite preostale podatke i sačuvajte.
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-sm">Ime i prezime *</Label>
-                  <Input value={newCustName} onChange={e => dispatch({ type: 'SET_NEW_CUST_FIELD', field: 'newCustName', value: e.target.value })} className="h-11" />
+                  <Input
+                    value={newCustName}
+                    onChange={e => dispatch({ type: 'SET_NEW_CUST_FIELD', field: 'newCustName', value: e.target.value })}
+                    className="h-11"
+                    placeholder="Npr. Marko Marković"
+                  />
                 </div>
                 <div>
                   <Label className="text-sm">Telefon *</Label>
-                  <Input value={newCustPhone} onChange={e => dispatch({ type: 'SET_NEW_CUST_FIELD', field: 'newCustPhone', value: e.target.value })} className="h-11" />
+                  <Input
+                    value={newCustPhone}
+                    onChange={e => dispatch({ type: 'SET_NEW_CUST_FIELD', field: 'newCustPhone', value: e.target.value })}
+                    className="h-11"
+                    placeholder="Npr. 0641234567"
+                  />
                 </div>
               </div>
               <div>
                 <Label className="text-sm">Email (opciono)</Label>
                 <Input value={newCustEmail} onChange={e => dispatch({ type: 'SET_NEW_CUST_FIELD', field: 'newCustEmail', value: e.target.value })} className="h-11" />
               </div>
-              <Button onClick={onCreateCustomer} disabled={!newCustName || !newCustPhone}>Sačuvaj kupca</Button>
+              <Button onClick={onCreateCustomer} disabled={!newCustName.trim() || !newCustPhone.trim()}>Sačuvaj kupca</Button>
             </div>
           )}
         </div>

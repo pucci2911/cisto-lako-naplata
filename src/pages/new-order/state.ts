@@ -92,8 +92,17 @@ export function newOrderReducer(state: NewOrderState, action: NewOrderAction): N
       return { ...state, custSearch: action.value, showNewCustForm: false };
     case 'SELECT_CUSTOMER':
       return { ...state, selectedCustomer: action.customer, custSearch: '', isDirty: action.customer ? true : state.isDirty };
-    case 'SHOW_NEW_CUST_FORM':
-      return { ...state, showNewCustForm: action.value };
+    case 'SHOW_NEW_CUST_FORM': {
+      if (!action.value) return { ...state, showNewCustForm: false };
+      const search = state.custSearch.trim();
+      const isPhone = /^[+\d\s()-]+$/.test(search) && /\d/.test(search);
+      return {
+        ...state,
+        showNewCustForm: true,
+        newCustName: isPhone ? state.newCustName : (state.newCustName || search),
+        newCustPhone: isPhone ? (state.newCustPhone || search) : state.newCustPhone,
+      };
+    }
     case 'SET_NEW_CUST_FIELD':
       return { ...state, [action.field]: action.value };
     case 'RESET_NEW_CUST_FORM':
