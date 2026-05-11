@@ -54,7 +54,13 @@ function getDaysForPeriod(period: Period): string[] {
 
 export default function ReportsPage() {
   const navigate = useNavigate();
-  const orders = getOrders();
+  const { data: orders = [] } = useQuery(queries.orders());
+  const { data: customers = [] } = useQuery(queries.customers());
+  const customerMap = useMemo(() => {
+    const m = new Map<string, typeof customers[number]>();
+    customers.forEach(c => m.set(c.id, c));
+    return m;
+  }, [customers]);
   const [period, setPeriod] = useState<Period>('mesec');
   const [exporting, setExporting] = useState(false);
 
@@ -69,7 +75,7 @@ export default function ReportsPage() {
     try {
       const headers = ['Broj porudžbine', 'Kupac', 'Datum prijema', 'Status', 'Status plaćanja', 'Ukupno', 'Plaćeno', 'Ostatak'];
       const rows = filtered.map(o => {
-        const customer = getCustomer(o.customerId);
+        const customer = customerMap.get(o.customerId);
         return [
           o.orderNumber,
           customer?.fullName || '—',
@@ -213,7 +219,7 @@ export default function ReportsPage() {
                 </thead>
                 <tbody>
                   {unpaidOrders.map(order => {
-                    const customer = getCustomer(order.customerId);
+                    const customer = customerMap.get(order.customerId);
                     return (
                       <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
                         className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors">
