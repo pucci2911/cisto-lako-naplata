@@ -221,17 +221,57 @@ export async function deleteOrderItem(id: string): Promise<void> {
   if (error) throw error;
 }
 
-// ============== Price list (localStorage) ==============
-export function getPriceList(): PriceListItem[] { return lsGet<PriceListItem>(KEYS.priceList); }
-export function savePriceListItem(item: Omit<PriceListItem, 'id'>): PriceListItem {
-  const all = getPriceList();
-  const p: PriceListItem = { ...item, id: uid() };
-  all.push(p);
-  lsSet(KEYS.priceList, all);
-  return p;
+// ============== Price list (Supabase) ==============
+export async function getPriceList(): Promise<PriceListItem[]> {
+  const { data, error } = await supabase
+    .from('price_list')
+    .select('*')
+    .order('category', { ascending: true })
+    .order('item_name', { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(r => ({
+    id: r.id,
+    itemName: r.item_name,
+    category: r.category,
+    basePrice: r.base_price,
+    active: r.active,
+  }));
 }
-export function updatePriceListItem(id: string, updates: Partial<PriceListItem>) {
-  lsSet(KEYS.priceList, getPriceList().map(p => p.id === id ? { ...p, ...updates } : p));
+
+export async function savePriceListItem(item: Omit<PriceListItem, 'id'>): Promise<PriceListItem> {
+  const { data, error } = await supabase
+    .from('price_list')
+    .insert({
+      item_name: item.itemName,
+      category: item.category,
+      base_price: item.basePrice,
+      active: item.active,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    itemName: data.item_name,
+    category: data.category,
+    basePrice: data.base_price,
+    active: data.active,
+  };
+}
+
+export async function updatePriceListItem(id: string, updates: Partial<PriceListItem>): Promise<void> {
+  const payload: {
+    item_name?: string;
+    category?: string;
+    base_price?: number;
+    active?: boolean;
+  } = {};
+  if (updates.itemName !== undefined) payload.item_name = updates.itemName;
+  if (updates.category !== undefined) payload.category = updates.category;
+  if (updates.basePrice !== undefined) payload.base_price = updates.basePrice;
+  if (updates.active !== undefined) payload.active = updates.active;
+  const { error } = await supabase.from('price_list').update(payload).eq('id', id);
+  if (error) throw error;
 }
 
 // ============== Users (legacy stubs) ==============
@@ -258,20 +298,9 @@ export function saveSettings(s: ShopSettings) {
   localStorage.setItem(KEYS.settings, JSON.stringify(s));
 }
 
-// ============== Seed (only price list now) ==============
+// ============== Seed (settings only) ==============
 export function seedIfNeeded() {
   if (localStorage.getItem(KEYS.seeded)) return;
   if (!localStorage.getItem(KEYS.settings)) saveSettings(defaultSettings);
-  const plData: Array<[string, string, number]> = [
-    ['Košulja', 'Gornji deo', 350], ['Pantalone', 'Donji deo', 400], ['Sako', 'Gornji deo', 600],
-    ['Odelo (2-delno)', 'Odela', 900], ['Haljina', 'Haljine', 700], ['Jakna', 'Jakne', 800],
-    ['Kaput', 'Kaputi', 1200], ['Suknja', 'Donji deo', 350], ['Džemper', 'Džemperi', 400],
-    ['Kravata', 'Dodaci', 200], ['Zavesa (par)', 'Zavese', 1500], ['Jorgan navlaka', 'Posteljina', 800],
-    ['Ćebe', 'Posteljina', 1000], ['Jastuk', 'Posteljina', 500], ['Tepih mali', 'Tepisi', 1200],
-  ];
-  const priceList: PriceListItem[] = plData.map(([itemName, category, basePrice]) => ({
-    id: uid(), itemName, category, basePrice, active: true,
-  }));
-  lsSet(KEYS.priceList, priceList);
   localStorage.setItem(KEYS.seeded, 'true');
 }

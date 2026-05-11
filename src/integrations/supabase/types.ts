@@ -159,6 +159,33 @@ export type Database = {
           },
         ]
       }
+      price_list: {
+        Row: {
+          active: boolean
+          base_price: number
+          category: string
+          created_at: string
+          id: string
+          item_name: string
+        }
+        Insert: {
+          active?: boolean
+          base_price?: number
+          category: string
+          created_at?: string
+          id?: string
+          item_name: string
+        }
+        Update: {
+          active?: boolean
+          base_price?: number
+          category?: string
+          created_at?: string
+          id?: string
+          item_name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active: boolean
