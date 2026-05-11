@@ -1,4 +1,4 @@
-import { getCustomers, getCustomer, getOrders, getOrder, getOrderItems } from '@/store/data';
+import { getCustomers, getCustomer, getOrders, getOrder, getOrderItems, getPriceList } from '@/store/data';
 
 export const queryKeys = {
   customers: ['customers'] as const,
@@ -6,6 +6,7 @@ export const queryKeys = {
   orders: ['orders'] as const,
   order: (id: string) => ['orders', id] as const,
   orderItems: (orderId: string) => ['order_items', orderId] as const,
+  priceList: ['price_list'] as const,
 };
 
 export const queries = {
