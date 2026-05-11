@@ -75,7 +75,7 @@ export default function ReportsPage() {
     try {
       const headers = ['Broj porudžbine', 'Kupac', 'Datum prijema', 'Status', 'Status plaćanja', 'Ukupno', 'Plaćeno', 'Ostatak'];
       const rows = filtered.map(o => {
-        const customer = getCustomer(o.customerId);
+        const customer = customerMap.get(o.customerId);
         return [
           o.orderNumber,
           customer?.fullName || '—',
@@ -219,7 +219,7 @@ export default function ReportsPage() {
                 </thead>
                 <tbody>
                   {unpaidOrders.map(order => {
-                    const customer = getCustomer(order.customerId);
+                    const customer = customerMap.get(order.customerId);
                     return (
                       <tr key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
                         className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors">
