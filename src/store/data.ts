@@ -298,20 +298,9 @@ export function saveSettings(s: ShopSettings) {
   localStorage.setItem(KEYS.settings, JSON.stringify(s));
 }
 
-// ============== Seed (only price list now) ==============
+// ============== Seed (settings only) ==============
 export function seedIfNeeded() {
   if (localStorage.getItem(KEYS.seeded)) return;
   if (!localStorage.getItem(KEYS.settings)) saveSettings(defaultSettings);
-  const plData: Array<[string, string, number]> = [
-    ['Košulja', 'Gornji deo', 350], ['Pantalone', 'Donji deo', 400], ['Sako', 'Gornji deo', 600],
-    ['Odelo (2-delno)', 'Odela', 900], ['Haljina', 'Haljine', 700], ['Jakna', 'Jakne', 800],
-    ['Kaput', 'Kaputi', 1200], ['Suknja', 'Donji deo', 350], ['Džemper', 'Džemperi', 400],
-    ['Kravata', 'Dodaci', 200], ['Zavesa (par)', 'Zavese', 1500], ['Jorgan navlaka', 'Posteljina', 800],
-    ['Ćebe', 'Posteljina', 1000], ['Jastuk', 'Posteljina', 500], ['Tepih mali', 'Tepisi', 1200],
-  ];
-  const priceList: PriceListItem[] = plData.map(([itemName, category, basePrice]) => ({
-    id: uid(), itemName, category, basePrice, active: true,
-  }));
-  lsSet(KEYS.priceList, priceList);
   localStorage.setItem(KEYS.seeded, 'true');
 }
