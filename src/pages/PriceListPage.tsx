@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { getPriceList, savePriceListItem, updatePriceListItem } from '@/store/data';
+import React, { useState, useMemo } from 'react';
+import { usePriceList } from '@/hooks/usePriceList';
 import { formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,12 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import type { PriceListItem } from '@/types';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function PriceList() {
-  const [items, setItems] = useState<PriceListItem[]>(() => getPriceList());
+  const { items, isLoading, create, update } = usePriceList();
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -22,10 +21,6 @@ export default function PriceList() {
   const [errors, setErrors] = useState<{ name?: string; category?: string; price?: string }>({});
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-
-  const refreshItems = useCallback(() => {
-    setItems(getPriceList());
-  }, []);
 
   const sorted = useMemo(() =>
     [...items].sort((a, b) => {
