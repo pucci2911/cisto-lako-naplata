@@ -54,7 +54,13 @@ function getDaysForPeriod(period: Period): string[] {
 
 export default function ReportsPage() {
   const navigate = useNavigate();
-  const orders = getOrders();
+  const { data: orders = [] } = useQuery(queries.orders());
+  const { data: customers = [] } = useQuery(queries.customers());
+  const customerMap = useMemo(() => {
+    const m = new Map<string, typeof customers[number]>();
+    customers.forEach(c => m.set(c.id, c));
+    return m;
+  }, [customers]);
   const [period, setPeriod] = useState<Period>('mesec');
   const [exporting, setExporting] = useState(false);
 
