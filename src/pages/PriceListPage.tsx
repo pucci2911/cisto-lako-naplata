@@ -62,15 +62,14 @@ export default function PriceList() {
     return Object.keys(e).length === 0;
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!validate()) return;
     setSaving(true);
     try {
-      savePriceListItem({ itemName: name.trim(), category: category.trim(), basePrice: Number(price), active: true });
+      await create({ itemName: name.trim(), category: category.trim(), basePrice: Number(price), active: true });
       toast.success('Stavka uspešno dodata.');
       setName(''); setCategory(''); setPrice(''); setErrors({});
       setShowAdd(false);
-      refreshItems();
     } catch {
       toast.error('Nije moguće sačuvati stavku. Pokušajte ponovo.');
     } finally {
@@ -78,17 +77,23 @@ export default function PriceList() {
     }
   };
 
-  const handleToggle = (id: string, active: boolean) => {
-    updatePriceListItem(id, { active });
-    refreshItems();
+  const handleToggle = async (id: string, active: boolean) => {
+    try {
+      await update(id, { active });
+    } catch {
+      toast.error('Greška pri ažuriranju stavke.');
+    }
   };
 
-  const handleEditSave = (id: string) => {
+  const handleEditSave = async (id: string) => {
     if (!validate()) return;
-    updatePriceListItem(id, { itemName: name.trim(), category: category.trim(), basePrice: Number(price) });
-    toast.success('Stavka ažurirana.');
-    setEditId(null);
-    refreshItems();
+    try {
+      await update(id, { itemName: name.trim(), category: category.trim(), basePrice: Number(price) });
+      toast.success('Stavka ažurirana.');
+      setEditId(null);
+    } catch {
+      toast.error('Greška pri ažuriranju stavke.');
+    }
   };
 
   const startEdit = (id: string) => {
