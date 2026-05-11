@@ -260,7 +260,12 @@ export async function savePriceListItem(item: Omit<PriceListItem, 'id'>): Promis
 }
 
 export async function updatePriceListItem(id: string, updates: Partial<PriceListItem>): Promise<void> {
-  const payload: Record<string, unknown> = {};
+  const payload: {
+    item_name?: string;
+    category?: string;
+    base_price?: number;
+    active?: boolean;
+  } = {};
   if (updates.itemName !== undefined) payload.item_name = updates.itemName;
   if (updates.category !== undefined) payload.category = updates.category;
   if (updates.basePrice !== undefined) payload.base_price = updates.basePrice;
