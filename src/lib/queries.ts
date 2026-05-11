@@ -27,4 +27,5 @@ export const queries = {
     queryFn: () => getOrderItems(orderId!),
     enabled: !!orderId,
   }),
+  priceList: () => ({ queryKey: queryKeys.priceList, queryFn: getPriceList }),
 };
