@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queries, queryKeys } from '@/lib/queries';
 import { updateOrder, getSettings } from '@/store/data';
+import { supabase } from '@/integrations/supabase/client';
 import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
 import { addAuditEntry, getAuditEntries } from '@/store/audit';
 import { Button } from '@/components/ui/button';
@@ -41,19 +42,28 @@ export default function OrderDetail() {
 
   const amountDue = order.totalPrice - order.amountPaid;
 
-  const handleStatusChange = (newStatus: OrderStatus) => {
+  const handleStatusChange = async (newStatus: OrderStatus) => {
     setNotification('');
     const updates: Partial<Order> = { status: newStatus };
     if (newStatus === 'Preuzeto') {
       updates.pickedUpAt = new Date().toISOString();
       addAuditEntry(order.id, `Porudžbina preuzeta`);
     }
-    if (newStatus === 'Spremno' && customer?.email) {
-      updates.readyNotificationSentAt = new Date().toISOString();
-      setNotification(`Email obaveštenje poslato na ${customer.email}`);
-      addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
-    } else if (newStatus === 'Spremno' && !customer?.email) {
-      setNotification('Kupac nema email adresu. Obavestite ga telefonom.');
+    if (newStatus === 'Spremno') {
+      if (customer?.email) {
+        const { error } = await supabase.functions.invoke('send-ready-notification', {
+          body: { orderId: order.id, shopName: settings.shopName },
+        });
+        if (error) {
+          setNotification(`Slanje emaila nije uspelo: ${error.message}`);
+        } else {
+          updates.readyNotificationSentAt = new Date().toISOString();
+          setNotification(`Email obaveštenje poslato na ${customer.email}`);
+          addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
+        }
+      } else {
+        setNotification('Status ažuriran (kupac nema email)');
+      }
     }
     addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
     updateMutation.mutate(updates);
