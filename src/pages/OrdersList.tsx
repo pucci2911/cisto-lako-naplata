@@ -76,7 +76,48 @@ export default function OrdersList() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+      {/* Mobile card view */}
+      <div className="md:hidden space-y-3">
+        {isLoading && (
+          <div className="bg-card rounded-xl p-6 text-center text-muted-foreground shadow-sm">Učitavanje...</div>
+        )}
+        {!isLoading && orders.length === 0 && allOrders.length === 0 && (
+          <div className="bg-card rounded-xl p-6 text-center shadow-sm">
+            <p className="text-muted-foreground font-medium">Još uvek nema porudžbina.</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">Kreirajte prvu porudžbinu klikom na dugme iznad.</p>
+          </div>
+        )}
+        {!isLoading && orders.length === 0 && allOrders.length > 0 && (
+          <div className="bg-card rounded-xl p-6 text-center shadow-sm">
+            <p className="text-muted-foreground font-medium">Nema porudžbina za zadate filtere.</p>
+            <button onClick={resetFilters} className="text-sm text-primary hover:underline mt-2 inline-block">Resetuj filtere</button>
+          </div>
+        )}
+        {orders.map(order => {
+          const c = customerById.get(order.customerId);
+          return (
+            <button key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
+              className="w-full text-left bg-card rounded-xl p-4 shadow-sm shadow-black/5 hover:bg-muted/30 transition-colors">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="font-mono font-semibold">{order.orderNumber}</span>
+                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span>
+              </div>
+              <div className="font-medium">{c?.fullName || '—'}</div>
+              {c?.phone && <div className="text-sm text-muted-foreground">{c.phone}</div>}
+              <div className="flex items-center justify-between mt-3 gap-2">
+                <span className="text-sm text-muted-foreground">{formatDate(order.dueDate)}</span>
+                <span className="font-semibold tabular-nums">{formatPrice(order.totalPrice)}</span>
+              </div>
+              <div className="mt-2">
+                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{formatPaymentStatus(order.paymentStatus)}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
