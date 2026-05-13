@@ -28,7 +28,25 @@ export default function CustomersList() {
       <Input placeholder="Pretražite po imenu ili telefonu..." value={search} onChange={e => setSearch(e.target.value)}
         className="mb-4 h-12 text-base max-w-md" />
 
-      <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {isLoading && <div className="bg-card rounded-xl p-6 text-center text-muted-foreground shadow-sm">Učitavanje...</div>}
+        {!isLoading && filtered.length === 0 && <div className="bg-card rounded-xl p-6 text-center text-muted-foreground shadow-sm">Nema kupaca.</div>}
+        {filtered.map(c => (
+          <button key={c.id} onClick={() => navigate(`/kupci/${c.id}`)}
+            className="w-full text-left bg-card rounded-xl p-4 shadow-sm shadow-black/5 hover:bg-muted/30 transition-colors">
+            <div className="flex items-start justify-between gap-2">
+              <div className="font-semibold">{c.fullName}</div>
+              <div className="text-sm tabular-nums text-muted-foreground">{orderCountById.get(c.id) ?? 0} por.</div>
+            </div>
+            <div className="text-sm text-muted-foreground mt-1">{c.phone}</div>
+            {c.email && <div className="text-sm text-muted-foreground">{c.email}</div>}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
