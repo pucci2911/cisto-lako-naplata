@@ -206,7 +206,24 @@ export default function ReportsPage() {
       {unpaidOrders.length > 0 && (
         <>
           <h2 className="text-lg font-semibold mb-3">Neplaćene ili delimično plaćene porudžbine</h2>
-          <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {unpaidOrders.map(order => {
+              const customer = customerMap.get(order.customerId);
+              return (
+                <button key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
+                  className="w-full text-left bg-card rounded-xl p-4 shadow-sm shadow-black/5 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-mono font-semibold">{order.orderNumber}</span>
+                    <span className="font-semibold tabular-nums">{formatPrice(order.totalPrice - order.amountPaid)}</span>
+                  </div>
+                  <div className="mt-1">{customer?.fullName || '—'}</div>
+                  {customer?.phone && <div className="text-sm text-muted-foreground">{customer.phone}</div>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="hidden md:block bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
