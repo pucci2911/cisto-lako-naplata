@@ -65,7 +65,7 @@ export default function CustomerDetail() {
         <h1 className="text-title">{customer.fullName}</h1>
       </div>
 
-      <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
+      <div className="bg-card rounded-xl p-4 sm:p-6 shadow-sm shadow-black/5 mb-6">
         {editing ? (
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -81,19 +81,43 @@ export default function CustomerDetail() {
           </div>
         ) : (
           <div className="flex justify-between">
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <p className="font-medium text-base">{customer.fullName}</p>
               <p className="text-muted-foreground">{customer.phone}</p>
               {customer.email && <p className="text-muted-foreground">{customer.email}</p>}
               {customer.notes && <p className="text-sm text-muted-foreground mt-2">{customer.notes}</p>}
             </div>
-            <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1"><Pencil size={14} /> Izmeni</Button>
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1 shrink-0"><Pencil size={14} /> Izmeni</Button>
           </div>
         )}
       </div>
 
       <h2 className="text-lg font-semibold mb-3">Porudžbine ({orders.length})</h2>
-      <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+
+      {/* Mobile card view */}
+      <div className="md:hidden space-y-3">
+        {orders.map(o => (
+          <button key={o.id} onClick={() => navigate(`/porudzbine/${o.id}`)}
+            className="w-full text-left bg-card rounded-xl p-4 shadow-sm shadow-black/5 hover:bg-muted/30 transition-colors">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <span className="font-mono font-semibold">{o.orderNumber}</span>
+              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(o.status)}`}>{o.status}</span>
+            </div>
+            <div className="flex items-center justify-between mt-2 gap-2">
+              <span className="text-sm text-muted-foreground">{formatDate(o.dueDate)}</span>
+              <span className="font-semibold tabular-nums">{formatPrice(o.totalPrice)}</span>
+            </div>
+          </button>
+        ))}
+        {orders.length === 0 && (
+          <div className="bg-card rounded-xl p-6 text-center shadow-sm">
+            <p className="text-muted-foreground">Nema porudžbina.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b bg-muted/50">
