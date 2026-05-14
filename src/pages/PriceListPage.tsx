@@ -164,7 +164,64 @@ export default function PriceList() {
         </div>
       )}
 
-      <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+      {/* Mobile card view */}
+      <div className="md:hidden space-y-3">
+        {noData && (
+          <div className="bg-card rounded-xl p-6 text-center shadow-sm">
+            <p className="text-muted-foreground font-medium">Cenovnik je prazan.</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">Dodajte prvu stavku klikom na dugme iznad.</p>
+          </div>
+        )}
+        {noResults && (
+          <div className="bg-card rounded-xl p-6 text-center shadow-sm">
+            <p className="text-muted-foreground font-medium">Nema stavki za uneti pojam.</p>
+            <button onClick={clearSearch} className="text-sm text-primary hover:underline mt-1">Obriši pretragu</button>
+          </div>
+        )}
+        {paginated.map(item => (
+          <div key={item.id} className="bg-card rounded-xl p-4 shadow-sm shadow-black/5">
+            {editId === item.id ? (
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-sm">Kategorija</Label>
+                  <Input value={category} onChange={e => setCategory(e.target.value)} className="h-9" />
+                  {errors.category && <p className="text-destructive text-xs mt-1">{errors.category}</p>}
+                </div>
+                <div>
+                  <Label className="text-sm">Naziv</Label>
+                  <Input value={name} onChange={e => setName(e.target.value)} className="h-9" />
+                  {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
+                </div>
+                <div>
+                  <Label className="text-sm">Cena</Label>
+                  <Input type="number" value={price} onChange={e => setPrice(e.target.value)} className="h-9" />
+                  {errors.price && <p className="text-destructive text-xs mt-1">{errors.price}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => handleEditSave(item.id)}>Sačuvaj</Button>
+                  <Button size="sm" variant="outline" onClick={() => { setEditId(null); setErrors({}); }}>Otkaži</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium truncate">{item.itemName}</div>
+                  <div className="text-sm text-muted-foreground">{item.category}</div>
+                  <div className="font-semibold tabular-nums mt-1">{formatPrice(item.basePrice)}</div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-sm text-muted-foreground">Aktivno</span>
+                    <Switch checked={item.active} onCheckedChange={v => handleToggle(item.id, v)} />
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => startEdit(item.id)}>Izmeni</Button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

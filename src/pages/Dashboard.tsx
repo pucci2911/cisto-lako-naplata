@@ -51,8 +51,35 @@ export default function Dashboard() {
     return { date: `${d.getDate()}.${d.getMonth() + 1}.`, count };
   });
 
+  const renderOrderCards = (orderList: typeof orders, emptyMsg: string, highlight?: boolean) => (
+    <div className="md:hidden space-y-3">
+      {orderList.map(order => (
+        <button key={order.id} onClick={() => navigate(`/porudzbine/${order.id}`)}
+          className={`w-full text-left bg-card rounded-xl p-4 shadow-sm shadow-black/5 hover:bg-muted/30 transition-colors ${highlight ? 'border border-destructive/30' : ''}`}>
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="font-mono font-semibold">{order.orderNumber}</span>
+            <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${statusColor(order.status)}`}>{order.status}</span>
+          </div>
+          <div className="font-medium">{customerById.get(order.customerId) || '—'}</div>
+          <div className="flex items-center justify-between mt-3 gap-2">
+            <span className="text-sm text-muted-foreground">{formatDate(order.dueDate)}</span>
+            <span className="font-semibold tabular-nums">{formatPrice(order.totalPrice)}</span>
+          </div>
+          <div className="mt-2">
+            <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${paymentStatusColor(order.paymentStatus)}`}>{formatPaymentStatus(order.paymentStatus)}</span>
+          </div>
+        </button>
+      ))}
+      {orderList.length === 0 && (
+        <div className="bg-card rounded-xl p-6 text-center shadow-sm">
+          <p className="text-muted-foreground">{emptyMsg}</p>
+        </div>
+      )}
+    </div>
+  );
+
   const renderOrderTable = (orderList: typeof orders, emptyMsg: string, highlight?: boolean) => (
-    <div className="bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
+    <div className="hidden md:block bg-card rounded-xl shadow-sm shadow-black/5 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -100,11 +127,17 @@ export default function Dashboard() {
       <h2 className="text-lg font-semibold mb-3">Aktivne porudžbine</h2>
       {isLoading
         ? <div className="bg-card rounded-xl px-4 py-12 text-center text-muted-foreground">Učitavanje...</div>
-        : renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
+        : (
+          <>
+            {renderOrderCards(todayOrders, 'Nema aktivnih porudžbina.')}
+            {renderOrderTable(todayOrders, 'Nema aktivnih porudžbina.')}
+          </>
+        )}
 
       {overdueOrders.length > 0 && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-3 text-destructive">Zakasnele porudžbine</h2>
+          {renderOrderCards(overdueOrders, '', true)}
           {renderOrderTable(overdueOrders, '', true)}
         </div>
       )}
