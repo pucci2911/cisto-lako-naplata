@@ -1,4 +1,5 @@
 import { getCustomers, getCustomer, getOrders, getOrder, getOrderItems, getPriceList } from '@/store/data';
+import { getAuditEntries } from '@/store/audit';
 
 export const queryKeys = {
   customers: ['customers'] as const,
@@ -7,6 +8,7 @@ export const queryKeys = {
   order: (id: string) => ['orders', id] as const,
   orderItems: (orderId: string) => ['order_items', orderId] as const,
   priceList: ['price_list'] as const,
+  auditLog: (orderId: string) => ['audit_log', orderId] as const,
 };
 
 export const queries = {
@@ -28,4 +30,9 @@ export const queries = {
     enabled: !!orderId,
   }),
   priceList: () => ({ queryKey: queryKeys.priceList, queryFn: getPriceList }),
+  auditLog: (orderId: string | undefined) => ({
+    queryKey: queryKeys.auditLog(orderId ?? ''),
+    queryFn: () => getAuditEntries(orderId!),
+    enabled: !!orderId,
+  }),
 };
