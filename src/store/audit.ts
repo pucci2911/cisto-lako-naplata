@@ -1,3 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export interface AuditEntry {
   id: string;
   orderId: string;
@@ -5,23 +7,25 @@ export interface AuditEntry {
   description: string;
 }
 
-const KEY = 'cisto_audit';
-
-function getAll(): AuditEntry[] {
-  const raw = localStorage.getItem(KEY);
-  return raw ? JSON.parse(raw) : [];
+export async function addAuditEntry(orderId: string, description: string): Promise<void> {
+  const { error } = await supabase.from('audit_log').insert({
+    order_id: orderId,
+    description,
+  });
+  if (error) throw error;
 }
 
-function save(entries: AuditEntry[]) {
-  localStorage.setItem(KEY, JSON.stringify(entries));
-}
-
-export function addAuditEntry(orderId: string, description: string) {
-  const all = getAll();
-  all.push({ id: crypto.randomUUID(), orderId, timestamp: new Date().toISOString(), description });
-  save(all);
-}
-
-export function getAuditEntries(orderId: string): AuditEntry[] {
-  return getAll().filter(e => e.orderId === orderId).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+export async function getAuditEntries(orderId: string): Promise<AuditEntry[]> {
+  const { data, error } = await supabase
+    .from('audit_log')
+    .select('*')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r: Record<string, unknown>) => ({
+    id: r.id as string,
+    orderId: r.order_id as string,
+    timestamp: r.created_at as string,
+    description: r.description as string,
+  }));
 }
