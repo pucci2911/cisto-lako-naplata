@@ -48,7 +48,7 @@ export default function DashboardStats({ cards, dailyData }: DashboardStatsProps
         {total === 0 ? (
           <p className="text-center text-muted-foreground py-8">Nema podataka za prikaz.</p>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="99%" height={280} style={{ overflow: 'hidden' }}>
             <PieChart>
               <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name.split(' ')[0]} ${(percent * 100).toFixed(0)}%`}>
                 {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
