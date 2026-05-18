@@ -55,8 +55,8 @@ export default function Layout({ children }: LayoutProps) {
   const handleLogout = async () => { await logout(); navigate('/'); };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-card border-b sticky top-0 z-30 no-print">
+    <div className="min-h-screen flex flex-col overflow-x-hidden max-w-full">
+      <header className="bg-card border-b sticky top-0 z-30 no-print overflow-x-hidden">
         <div className="container flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -86,13 +86,13 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 w-full max-w-full">
         <nav className="w-56 bg-card border-r hidden md:block no-print shrink-0">
           <NavList />
         </nav>
 
-        <main className="flex-1">
-          <div className="container py-6">
+        <main className="flex-1 w-full max-w-full min-w-0 overflow-x-hidden">
+          <div className="container py-6 px-4 md:px-6">
             {children}
           </div>
         </main>
