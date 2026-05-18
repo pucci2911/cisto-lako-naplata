@@ -21,11 +21,11 @@ export default function OrderDetail() {
   const qc = useQueryClient();
   const [showPrint, setShowPrint] = useState(false);
   const [notification, setNotification] = useState('');
-  const [auditVersion, setAuditVersion] = useState(0);
 
   const { data: order, isLoading } = useQuery(queries.order(id));
   const { data: customer } = useQuery(queries.customer(order?.customerId));
   const { data: items = [] } = useQuery(queries.orderItems(order?.id));
+  const { data: auditEntries = [] } = useQuery(queries.auditLog(order?.id));
   const settings = getSettings();
 
   const updateMutation = useMutation({
@@ -33,7 +33,7 @@ export default function OrderDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.order(id!) });
       qc.invalidateQueries({ queryKey: queryKeys.orders });
-      setAuditVersion(v => v + 1);
+      qc.invalidateQueries({ queryKey: queryKeys.auditLog(id!) });
     },
   });
 
