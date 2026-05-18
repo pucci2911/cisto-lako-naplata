@@ -5,7 +5,7 @@ import { queries, queryKeys } from '@/lib/queries';
 import { updateOrder, getSettings } from '@/store/data';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
-import { addAuditEntry, getAuditEntries } from '@/store/audit';
+import { addAuditEntry } from '@/store/audit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
