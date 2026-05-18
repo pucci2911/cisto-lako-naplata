@@ -47,7 +47,7 @@ export default function OrderDetail() {
     const updates: Partial<Order> = { status: newStatus };
     if (newStatus === 'Preuzeto') {
       updates.pickedUpAt = new Date().toISOString();
-      addAuditEntry(order.id, `Porudžbina preuzeta`);
+      await addAuditEntry(order.id, `Porudžbina preuzeta`);
     }
     if (newStatus === 'Spremno') {
       if (customer?.email) {
@@ -59,13 +59,13 @@ export default function OrderDetail() {
         } else {
           updates.readyNotificationSentAt = new Date().toISOString();
           setNotification(`Email obaveštenje poslato na ${customer.email}`);
-          addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
+          await addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
         }
       } else {
         setNotification('Status ažuriran (kupac nema email)');
       }
     }
-    addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
+    await addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
     updateMutation.mutate(updates);
   };
 
