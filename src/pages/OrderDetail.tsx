@@ -232,21 +232,18 @@ export default function OrderDetail() {
 
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Istorija promena</h2>
-        {(() => {
-          void auditVersion;
-          const entries = getAuditEntries(order.id);
-          if (entries.length === 0) return <p className="text-sm text-muted-foreground">Nema zabeleženih promena.</p>;
-          return (
-            <div className="space-y-2">
-              {entries.map(entry => (
-                <div key={entry.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-2 last:pb-0">
-                  <span className="text-muted-foreground whitespace-nowrap">{formatDateTime(entry.timestamp)}</span>
-                  <span>{entry.description}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
+        {auditEntries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nema zabeleženih promena.</p>
+        ) : (
+          <div className="space-y-2">
+            {auditEntries.map(entry => (
+              <div key={entry.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-2 last:pb-0">
+                <span className="text-muted-foreground whitespace-nowrap">{formatDateTime(entry.timestamp)}</span>
+                <span>{entry.description}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
