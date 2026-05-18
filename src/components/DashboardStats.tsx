@@ -48,7 +48,7 @@ export default function DashboardStats({ cards, dailyData }: DashboardStatsProps
         {total === 0 ? (
           <p className="text-center text-muted-foreground py-8">Nema podataka za prikaz.</p>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="99%" height={280} style={{ overflow: 'hidden' }}>
             <PieChart>
               <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name.split(' ')[0]} ${(percent * 100).toFixed(0)}%`}>
                 {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
@@ -81,8 +81,8 @@ export default function DashboardStats({ cards, dailyData }: DashboardStatsProps
     return (
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-8">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">Poređenje statistika</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={barData} barSize={48} margin={{ bottom: 20 }}>
+        <ResponsiveContainer width="99%" height={300} style={{ overflow: 'hidden' }}>
+          <BarChart data={barData} margin={{ bottom: 20 }}>
             <XAxis dataKey="name" tick={renderBarTick} interval={0} tickLine={false} />
             <YAxis allowDecimals={false} />
             <Tooltip />
@@ -99,7 +99,7 @@ export default function DashboardStats({ cards, dailyData }: DashboardStatsProps
   return (
     <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-8">
       <h3 className="text-sm font-medium text-muted-foreground mb-4">Porudžbine po danu (poslednjih 7 dana)</h3>
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="99%" height={280} style={{ overflow: 'hidden' }}>
         <LineChart data={dailyData}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
