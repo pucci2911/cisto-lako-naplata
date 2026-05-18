@@ -5,7 +5,7 @@ import { queries, queryKeys } from '@/lib/queries';
 import { updateOrder, getSettings } from '@/store/data';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate, formatDateTime, formatPrice } from '@/lib/format';
-import { addAuditEntry, getAuditEntries } from '@/store/audit';
+import { addAuditEntry } from '@/store/audit';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,11 +21,11 @@ export default function OrderDetail() {
   const qc = useQueryClient();
   const [showPrint, setShowPrint] = useState(false);
   const [notification, setNotification] = useState('');
-  const [auditVersion, setAuditVersion] = useState(0);
 
   const { data: order, isLoading } = useQuery(queries.order(id));
   const { data: customer } = useQuery(queries.customer(order?.customerId));
   const { data: items = [] } = useQuery(queries.orderItems(order?.id));
+  const { data: auditEntries = [] } = useQuery(queries.auditLog(order?.id));
   const settings = getSettings();
 
   const updateMutation = useMutation({
@@ -33,7 +33,7 @@ export default function OrderDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.order(id!) });
       qc.invalidateQueries({ queryKey: queryKeys.orders });
-      setAuditVersion(v => v + 1);
+      qc.invalidateQueries({ queryKey: queryKeys.auditLog(id!) });
     },
   });
 
@@ -47,7 +47,7 @@ export default function OrderDetail() {
     const updates: Partial<Order> = { status: newStatus };
     if (newStatus === 'Preuzeto') {
       updates.pickedUpAt = new Date().toISOString();
-      addAuditEntry(order.id, `Porudžbina preuzeta`);
+      await addAuditEntry(order.id, `Porudžbina preuzeta`);
     }
     if (newStatus === 'Spremno') {
       if (customer?.email) {
@@ -59,19 +59,19 @@ export default function OrderDetail() {
         } else {
           updates.readyNotificationSentAt = new Date().toISOString();
           setNotification(`Email obaveštenje poslato na ${customer.email}`);
-          addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
+          await addAuditEntry(order.id, `Obaveštenje poslato na ${customer.email}`);
         }
       } else {
         setNotification('Status ažuriran (kupac nema email)');
       }
     }
-    addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
+    await addAuditEntry(order.id, `Status promenjen u: ${newStatus}`);
     updateMutation.mutate(updates);
   };
 
-  const handleFieldUpdate = (field: keyof Order, value: string | number) => {
+  const handleFieldUpdate = async (field: keyof Order, value: string | number) => {
     if (field === 'paymentStatus') {
-      addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
+      await addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
     }
     updateMutation.mutate({ [field]: value } as Partial<Order>);
   };
@@ -232,21 +232,18 @@ export default function OrderDetail() {
 
       <div className="bg-card rounded-xl p-6 shadow-sm shadow-black/5 mb-6">
         <h2 className="text-lg font-semibold mb-3">Istorija promena</h2>
-        {(() => {
-          void auditVersion;
-          const entries = getAuditEntries(order.id);
-          if (entries.length === 0) return <p className="text-sm text-muted-foreground">Nema zabeleženih promena.</p>;
-          return (
-            <div className="space-y-2">
-              {entries.map(entry => (
-                <div key={entry.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-2 last:pb-0">
-                  <span className="text-muted-foreground whitespace-nowrap">{formatDateTime(entry.timestamp)}</span>
-                  <span>{entry.description}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
+        {auditEntries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nema zabeleženih promena.</p>
+        ) : (
+          <div className="space-y-2">
+            {auditEntries.map(entry => (
+              <div key={entry.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-2 last:pb-0">
+                <span className="text-muted-foreground whitespace-nowrap">{formatDateTime(entry.timestamp)}</span>
+                <span>{entry.description}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
