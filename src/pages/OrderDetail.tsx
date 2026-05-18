@@ -69,9 +69,9 @@ export default function OrderDetail() {
     updateMutation.mutate(updates);
   };
 
-  const handleFieldUpdate = (field: keyof Order, value: string | number) => {
+  const handleFieldUpdate = async (field: keyof Order, value: string | number) => {
     if (field === 'paymentStatus') {
-      addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
+      await addAuditEntry(order.id, `Status plaćanja promenjen u: ${value}`);
     }
     updateMutation.mutate({ [field]: value } as Partial<Order>);
   };
